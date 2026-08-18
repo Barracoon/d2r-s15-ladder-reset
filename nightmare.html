@@ -152,6 +152,29 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
   .nav a:hover{color:var(--txt);border-color:var(--gold)}
   .nav a.on{color:#0e0f13;background:var(--gold);border-color:var(--gold);font-weight:700}
 
+
+  /* ---------- timing ---------- */
+  .clock{font-size:13px;color:var(--gold);border:1px solid #4a3a20;background:#221a12;
+    border-radius:999px;padding:0 14px;height:36px;display:inline-flex;align-items:center;
+    gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}
+  .clock.idle{color:var(--dim);border-color:var(--line);background:var(--panel2);font-weight:400}
+  .split{font-size:11.5px;color:var(--dim);font-weight:600;white-space:nowrap;
+    font-variant-numeric:tabular-nums}
+  .split b{color:var(--gold);font-weight:700}
+  .card .split{display:block;margin-top:3px}
+  .splits{margin:26px 0}
+  .splits h3{font-size:15px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);
+    margin:0 0 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .splits .tools{margin-left:auto;display:flex;gap:8px}
+  .splits table{font-variant-numeric:tabular-nums}
+  .splits td.num{color:var(--dim);width:38px}
+  .splits td.t{white-space:nowrap}
+  .splits .empty{font-size:13.5px;color:var(--dim);border:1px dashed var(--line);
+    border-radius:12px;padding:16px;text-align:center}
+  #dump{width:100%;height:120px;background:#0b0c11;color:var(--txt);border:1px solid var(--line);
+    border-radius:10px;padding:10px;font-family:ui-monospace,Menlo,monospace;font-size:12px;
+    display:none;margin-top:10px}
+
   .quickref{margin:26px 0}
   .quickref h3{font-size:15px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
   table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
@@ -185,6 +208,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
     <label for="me">Checking things off as:</label>
     <select id="me"><option value="">— pick your name —</option></select>
     <span class="status local" id="status">checking…</span>
+    <span class="clock idle" id="clock">⏱ not started</span>
     <button class="clear" id="resetAll">Reset run</button>
   </div>
   <div class="bar"><i id="barFill"></i></div>
@@ -401,6 +425,18 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
   </ul>
 </div>
 
+
+<div class="splits">
+  <h3>Run splits
+    <span class="tools">
+      <button class="clear" id="copySplits">Copy</button>
+      <button class="clear" id="csvSplits">Download CSV</button>
+    </span>
+  </h3>
+  <div class="scroll" id="splitsWrap"></div>
+  <textarea id="dump" readonly></textarea>
+</div>
+
 <footer>Adapted from the Dewablo Strat S15 doc for our 8-man. Nightmare and Hell.</footer>
 
 </div>
@@ -466,17 +502,17 @@ document.querySelectorAll('[data-names]').forEach(el=>{
    ============================================================ */
 const LS = { get(k){try{return localStorage.getItem(k)}catch(e){return null}},
              set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
-let ME = LS.get('d2r-me') || '';
+let ME = '';   // always start unselected so nobody ticks as the wrong person
 let STATE = {};
-let pushOne = null, pushClear = null;
+let pushOne = null, pushClear = null, pushMeta = null;
 
 const sel = document.getElementById('me');
 ROSTER.forEach(p=>{
   const o=document.createElement('option');
   o.value=p.name; o.textContent=p.name+' · '+p.role; sel.appendChild(o);
 });
-sel.value = ME;
-sel.onchange = ()=>{ ME = sel.value; LS.set('d2r-me', ME); };
+sel.value = '';
+sel.onchange = ()=>{ ME = sel.value; };
 
 function mkChk(id){
   const b=document.createElement('button');
@@ -489,10 +525,12 @@ document.querySelectorAll('.step[data-id]').forEach(el=>{
   const h=el.querySelector('h4');
   h.prepend(mkChk(el.dataset.id));
   const by=document.createElement('span'); by.className='byline'; h.appendChild(by);
+  const sp=document.createElement('span'); sp.className='split'; h.appendChild(sp);
 });
 document.querySelectorAll('.card[data-id]').forEach(el=>{
   el.appendChild(mkChk(el.dataset.id));
   const by=document.createElement('span'); by.className='byline'; el.appendChild(by);
+  const sp=document.createElement('span'); sp.className='split'; el.appendChild(sp);
 });
 // per-act progress pills
 document.querySelectorAll('.flow[id]').forEach(f=>{
@@ -524,6 +562,10 @@ function toggle(id){
     return;
   }
   const turningOn = !STATE[id];
+  if(turningOn && !META.startedAt){
+    META.startedAt = Date.now();
+    if(pushMeta) pushMeta(META); else saveLocal();
+  }
   const rank = rankMap(), mine = rank.get(id);
   const changed = [];
 
@@ -547,7 +589,99 @@ function toggle(id){
   render();
   if(pushOne) changed.forEach(([k,v])=>pushOne(k,v)); else saveLocal();
 }
-function saveLocal(){ LS.set('d2r-state-'+window.RUN_KEY, JSON.stringify(STATE)); }
+function saveLocal(){
+  LS.set('d2r-state-'+window.RUN_KEY, JSON.stringify(STATE));
+  LS.set('d2r-meta-'+window.RUN_KEY,  JSON.stringify(META));
+}
+
+
+/* ============================================================
+   RUN TIMER
+   ============================================================ */
+let META = {};
+const TITLES = {};
+document.querySelectorAll('[data-id]').forEach(el=>{
+  const h = el.querySelector('h4') || el.querySelector('.ttl');
+  if(!h){ TITLES[el.dataset.id] = el.dataset.id; return; }
+  const c = h.cloneNode(true);
+  c.querySelectorAll('.tag, .chk, .byline, .split').forEach(n=>n.remove());
+  TITLES[el.dataset.id] = c.textContent.replace(/\s+/g,' ').trim();
+});
+
+const fmt = ms => {
+  if(ms==null || ms<0) return '—';
+  const s=Math.floor(ms/1000);
+  const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
+  return (h? h+':'+String(m).padStart(2,'0') : String(m)) + ':' + String(x).padStart(2,'0');
+};
+
+function orderedDone(){
+  const rank = rankMap();
+  return [...document.querySelectorAll('[data-id]')]
+    .map(el=>el.dataset.id)
+    .filter(id=>STATE[id])
+    .sort((a,b)=> (STATE[a].at||0)-(STATE[b].at||0) || rank.get(a)-rank.get(b));
+}
+
+function renderClock(){
+  const el=document.getElementById('clock');
+  if(!el) return;
+  if(!META.startedAt){ el.className='clock idle'; el.textContent='⏱ not started'; return; }
+  const done = orderedDone();
+  const all  = document.querySelectorAll('[data-id]').length;
+  const end  = done.length===all && done.length ? STATE[done[done.length-1]].at : Date.now();
+  el.className='clock';
+  el.textContent = '⏱ ' + fmt(end - META.startedAt) + (done.length===all && all ? ' · finished' : '');
+}
+setInterval(renderClock, 1000);
+
+function renderSplits(){
+  const wrap=document.getElementById('splitsWrap');
+  if(!wrap) return;
+  const done=orderedDone();
+  if(!done.length || !META.startedAt){
+    wrap.innerHTML='<div class="empty">No splits yet — the clock starts on the first box ticked.</div>';
+    return;
+  }
+  let prev=META.startedAt, rows='';
+  done.forEach((id,i)=>{
+    const at=STATE[id].at;
+    rows += '<tr><td class="num">'+(i+1)+'</td><td>'+TITLES[id]+'</td><td>'+STATE[id].by+
+            '</td><td class="t">'+fmt(at-META.startedAt)+'</td><td class="t">+'+fmt(at-prev)+'</td></tr>';
+    prev=at;
+  });
+  wrap.innerHTML='<table><thead><tr><th>#</th><th>Step</th><th>By</th><th>Elapsed</th><th>Split</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+function splitsText(){
+  const done=orderedDone();
+  if(!done.length||!META.startedAt) return '';
+  let prev=META.startedAt;
+  const lines=['#\tStep\tBy\tElapsed\tSplit'];
+  done.forEach((id,i)=>{
+    const at=STATE[id].at;
+    lines.push([i+1, TITLES[id].replace(/\t/g,' '), STATE[id].by, fmt(at-META.startedAt), '+'+fmt(at-prev)].join('\t'));
+    prev=at;
+  });
+  return lines.join('\n');
+}
+
+const cp=document.getElementById('copySplits');
+if(cp) cp.onclick=async()=>{
+  const t=splitsText();
+  if(!t){ cp.textContent='nothing yet'; setTimeout(()=>cp.textContent='Copy',1500); return; }
+  try{ await navigator.clipboard.writeText(t); cp.textContent='copied ✓'; }
+  catch(e){ const d=document.getElementById('dump'); d.style.display='block'; d.value=t; d.select(); cp.textContent='select + copy'; }
+  setTimeout(()=>cp.textContent='Copy',1800);
+};
+const cs=document.getElementById('csvSplits');
+if(cs) cs.onclick=()=>{
+  const t=splitsText(); if(!t) return;
+  const csv=t.split('\n').map(r=>r.split('\t').map(c=>'"'+c.replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=window.RUN_KEY+'-splits.csv'; a.click();
+};
 
 function render(){
   const colourOf = n => (ROSTER.find(p=>p.name===n)||{}).c || 'var(--dim)';
@@ -559,12 +693,15 @@ function render(){
       by.textContent = rec ? '✓ '+rec.by : '';
       by.style.color = rec ? colourOf(rec.by) : '';
     }
+    const sp = el.querySelector('.split');
+    if(sp) sp.textContent = (rec && META.startedAt) ? '⏱ '+fmt(rec.at-META.startedAt) : '';
   });
   const all=[...document.querySelectorAll('[data-id]')];
   const done=all.filter(e=>STATE[e.dataset.id]).length;
   const pct= all.length? Math.round(done/all.length*100):0;
   document.getElementById('barFill').style.width=pct+'%';
   document.getElementById('barTxt').textContent=done+' of '+all.length+' steps done · '+pct+'%';
+  renderClock(); renderSplits();
   document.querySelectorAll('.actprog').forEach(sp=>{
     const f=document.getElementById(sp.dataset.for);
     const items=[...f.querySelectorAll('[data-id]')];
@@ -585,7 +722,7 @@ rst.onclick=()=>{
     return;
   }
   clearTimeout(armTimer); armed=false; rst.textContent='Reset run'; rst.style.color=''; rst.style.borderColor='';
-  STATE={}; render();
+  STATE={}; META={}; render();
   if(pushClear) pushClear(); else saveLocal();
 };
 
@@ -599,13 +736,14 @@ function setStatus(kind,msg){
 }
 
 window.APP = {
-  remoteState(v){ STATE = v || {}; render(); },
-  setPush(one, clear){ pushOne=one; pushClear=clear; },
+  remoteState(v){ STATE = (v && v.steps) || {}; META = (v && v.meta) || {}; render(); },
+  setPush(one, clear, meta){ pushOne=one; pushClear=clear; pushMeta=meta; },
   status:setStatus
 };
 
 // start from local cache so the page is useful before/without Firebase
 try{ STATE = JSON.parse(LS.get('d2r-state-'+window.RUN_KEY)||'{}'); }catch(e){ STATE={}; }
+try{ META  = JSON.parse(LS.get('d2r-meta-'+window.RUN_KEY)||'{}');  }catch(e){ META={}; }
 render();
 
 let active = null;
@@ -633,14 +771,15 @@ function select(k){
       const { initializeApp } = await import(SDK + 'firebase-app.js');
       const { getDatabase, ref, onValue, set, remove } = await import(SDK + 'firebase-database.js');
       const db   = getDatabase(initializeApp(CFG));
-      const root = ref(db, 'runs/' + window.RUN_KEY + '/steps');
+      const root = ref(db, 'runs/' + window.RUN_KEY);
       onValue(root,
         snap => { window.APP.remoteState(snap.val() || {}); window.APP.status('live'); },
         err  => window.APP.status('error', err.message));
       window.APP.setPush(
         (id, rec) => rec ? set(ref(db,'runs/'+window.RUN_KEY+'/steps/'+id), rec)
                          : remove(ref(db,'runs/'+window.RUN_KEY+'/steps/'+id)),
-        ()        => remove(root));
+        ()        => remove(root),
+        (meta)    => set(ref(db,'runs/'+window.RUN_KEY+'/meta'), meta));
     }catch(e){ window.APP.status('error', e.message); }
   }
 </script>
