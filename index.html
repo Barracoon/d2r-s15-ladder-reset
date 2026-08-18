@@ -8,8 +8,8 @@
   :root{
     --bg:#0e0f13; --panel:#171922; --panel2:#1e2130; --line:#2c3040;
     --txt:#e8e6e3; --dim:#9aa0b0; --gold:#d8b56a; --red:#c8503f;
-    --tele:#5aa9e6; --taxi:#7bd389; --barb:#e0813f; --pally:#e8d15a;
-    --warlock:#a97bd6; --sin:#e06fa8; --zon:#4fd1c5; --druid:#8fbf5a;
+    --tele:#6b8cff; --taxi:#38cfe0; --barb:#c69a72; --pally:#f172b0;
+    --warlock:#b98af0; --sin:#4ad991; --zon:#f2d95c; --druid:#ef8b4b;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--txt);
@@ -25,16 +25,22 @@
   .rosterbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:18px 0}
   .rosterbox h2{margin:0 0 4px;font-size:14px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
   .hint{font-size:13px;color:var(--dim);margin:0 0 12px}
-  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
   .chip{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);
-    border-radius:999px;padding:7px 14px 7px 10px;cursor:pointer;transition:.15s;font-size:14px;user-select:none}
+    border-radius:999px;padding:0 14px 0 10px;cursor:pointer;transition:.15s;font-size:14px;
+    user-select:none;white-space:nowrap;height:36px;line-height:1}
   .chip:hover{border-color:var(--gold)}
   .chip .dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
-  .chip b{font-weight:600}
+  .chip b{font-weight:700}
+  .n{font-weight:700}
+  .n-tele{color:var(--tele)} .n-taxi{color:var(--taxi)} .n-barb{color:var(--barb)}
+  .n-pally{color:var(--pally)} .n-warlock{color:var(--warlock)} .n-sin{color:var(--sin)}
+  .n-zon{color:var(--zon)} .n-druid{color:var(--druid)}
   .chip span.role{color:var(--dim);font-size:12.5px}
   .chip.on{background:#2a2f45;border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
-  .clear{margin-left:auto;font-size:13px;color:var(--dim);background:none;border:1px solid var(--line);
-    border-radius:999px;padding:7px 14px;cursor:pointer}
+  .clear{font-family:inherit;font-size:14px;line-height:1;color:var(--dim);background:none;
+    border:1px dashed var(--line);border-radius:999px;padding:0 16px;cursor:pointer;
+    white-space:nowrap;height:36px;display:inline-flex;align-items:center}
   .clear:hover{color:var(--txt);border-color:var(--gold)}
 
   /* ---------- notes ---------- */
@@ -44,10 +50,11 @@
   .notes li{margin:4px 0;font-size:14.5px}
 
   /* ---------- acts ---------- */
-  .act{margin:34px 0 10px;display:flex;align-items:center;gap:12px}
-  .act .num{background:var(--red);color:#fff;font-weight:700;border-radius:10px;padding:6px 12px;font-size:14px;letter-spacing:1px}
+  .act{margin:34px 0 10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .act .num{background:var(--red);color:#fff;font-weight:700;border-radius:10px;padding:6px 12px;
+    font-size:14px;letter-spacing:1px;white-space:nowrap;flex:0 0 auto}
   .act h2{margin:0;font-size:20px;letter-spacing:.5px}
-  .act .goal{margin-left:auto;font-size:13px;color:var(--dim);text-align:right}
+  .act .goal{margin-left:auto;font-size:13px;color:var(--dim);text-align:right;white-space:nowrap}
 
   .flow{position:relative;padding-left:26px}
   .flow:before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--line)}
@@ -61,25 +68,26 @@
   .step h4{margin:0 0 6px;font-size:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   .step p{margin:4px 0 0;font-size:14.5px;color:#d3d6de}
   .step p.small{font-size:13px;color:var(--dim)}
-  .who{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);
-    border-radius:999px;padding:2px 9px;font-size:12.5px;white-space:nowrap}
+  .who{display:inline-flex;align-items:center;gap:6px;background:#12141d;border:1px solid var(--line);
+    border-radius:999px;padding:3px 10px;font-size:12.5px;white-space:nowrap;font-weight:700}
   .who .dot{width:8px;height:8px;border-radius:50%}
   .tag{font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:6px;
-    background:#2a2f45;color:var(--dim)}
+    background:#2a2f45;color:var(--dim);white-space:nowrap;flex:0 0 auto}
   .tag.all{background:#2f4030;color:#a8e0a0}
   .tag.tp{background:#1f3550;color:#8cc6f0}
   .tag.boss{background:#4a2020;color:#f0a0a0}
   .tag.loot{background:#3d3418;color:#e8d15a}
 
   /* ---------- split grid ---------- */
-  .splitbanner{background:var(--red);color:#fff;font-weight:700;letter-spacing:1.5px;text-align:center;
-    border-radius:10px;padding:9px;margin:18px 0 4px;font-size:14px}
+  .splitbanner{background:var(--red);color:#fff;font-weight:700;letter-spacing:1.2px;text-align:center;
+    border-radius:10px;padding:9px 12px;margin:18px 0 4px;font-size:13.5px}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px;margin:12px 0}
   .card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;
     transition:opacity .18s, filter .18s}
   .card.dimmed{opacity:.24;filter:saturate(.2)}
   .card.me{border-color:var(--gold)}
-  .card .ttl{font-size:13px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
+  .card .ttl{font-size:12.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--gold);
+    margin-bottom:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card .duo{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
   .card p{margin:0;font-size:13.5px;color:#cfd3dd}
 
@@ -181,7 +189,7 @@
       <p>Path Black Marsh → Tamoe → Monastery → Catacombs. Drop TPs at champ packs. Call out when you hit <b>Outer Cloister</b> and again at <b>Cata 3</b>.</p>
     </div>
     <div class="card" data-who="taxi warlock">
-      <div class="ttl">2 · Countess in MAIN game</div>
+      <div class="ttl">2 · Main-Game Countess</div>
       <div class="duo" data-names="taxi warlock"></div>
       <p>Run Countess in the main game. When bArracooN calls "Outer Cloister," you two can make a <b>new game</b> and run a second Countess.</p>
     </div>
@@ -389,7 +397,9 @@ const byKey = Object.fromEntries(ROSTER.map(p=>[p.k,p]));
 function pill(k){
   const p = byKey[k];
   if(!p) return '';
-  return '<span class="who"><span class="dot" style="background:'+p.c+'"></span>'+p.name+' <span style="color:var(--dim)">· '+p.role+'</span></span>';
+  return '<span class="who"><span class="dot" style="background:'+p.c+'"></span>'+
+         '<span style="color:'+p.c+'">'+p.name+'</span>'+
+         '<span style="color:var(--dim);font-weight:400"> · '+p.role+'</span></span>';
 }
 
 // build roster chips
@@ -397,7 +407,8 @@ const chips = document.getElementById('chips');
 ROSTER.forEach(p=>{
   const b = document.createElement('button');
   b.className='chip'; b.dataset.k=p.k;
-  b.innerHTML='<span class="dot" style="background:'+p.c+'"></span><b>'+p.name+'</b> <span class="role">'+p.role+'</span>';
+  b.innerHTML='<span class="dot" style="background:'+p.c+'"></span>'+
+              '<b style="color:'+p.c+'">'+p.name+'</b> <span class="role">'+p.role+'</span>';
   b.onclick=()=>select(p.k);
   chips.appendChild(b);
 });
@@ -410,6 +421,20 @@ chips.appendChild(clr);
 document.querySelectorAll('[data-names]').forEach(el=>{
   el.innerHTML = el.dataset.names.trim().split(/\s+/).map(pill).join(' ');
 });
+
+// colour every in-text mention of a player by their class
+(function colourNames(){
+  const targets = document.querySelectorAll('.step p, .card p, #qr td, .endblock li, .step h4');
+  const list = [...ROSTER].sort((a,b)=>b.name.length-a.name.length);
+  targets.forEach(el=>{
+    let h = el.innerHTML;
+    list.forEach(p=>{
+      const rx = new RegExp('(?![^<]*>)' + p.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g');
+      h = h.replace(rx, '<span class="n n-'+p.k+'">'+p.name+'</span>');
+    });
+    el.innerHTML = h;
+  });
+})();
 
 let active = null;
 function select(k){
