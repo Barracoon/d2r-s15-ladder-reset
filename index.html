@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S15 Ladder Reset — NORMAL Flow Chart</title>
+<style>
+  :root{
+    --bg:#0e0f13; --panel:#171922; --panel2:#1e2130; --line:#2c3040;
+    --txt:#e8e6e3; --dim:#9aa0b0; --gold:#d8b56a; --red:#c8503f;
+    --tele:#5aa9e6; --taxi:#7bd389; --barb:#e0813f; --pally:#e8d15a;
+    --warlock:#a97bd6; --sin:#e06fa8; --zon:#4fd1c5; --druid:#8fbf5a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 16px 80px}
+
+  header{text-align:center;padding:18px 0 6px}
+  h1{margin:0;font-size:clamp(22px,4.4vw,34px);letter-spacing:.5px;color:var(--gold)}
+  .sub{color:var(--dim);font-size:14px;margin-top:6px}
+
+  /* ---------- roster / filter ---------- */
+  .rosterbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:18px 0}
+  .rosterbox h2{margin:0 0 4px;font-size:14px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
+  .hint{font-size:13px;color:var(--dim);margin:0 0 12px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:999px;padding:7px 14px 7px 10px;cursor:pointer;transition:.15s;font-size:14px;user-select:none}
+  .chip:hover{border-color:var(--gold)}
+  .chip .dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+  .chip b{font-weight:600}
+  .chip span.role{color:var(--dim);font-size:12.5px}
+  .chip.on{background:#2a2f45;border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+  .clear{margin-left:auto;font-size:13px;color:var(--dim);background:none;border:1px solid var(--line);
+    border-radius:999px;padding:7px 14px;cursor:pointer}
+  .clear:hover{color:var(--txt);border-color:var(--gold)}
+
+  /* ---------- notes ---------- */
+  .notes{background:linear-gradient(180deg,#221a12,#191720);border:1px solid #4a3a20;border-radius:14px;padding:14px 18px;margin:0 0 22px}
+  .notes h3{margin:0 0 8px;color:var(--gold);font-size:14px;letter-spacing:1.2px;text-transform:uppercase}
+  .notes ul{margin:0;padding-left:20px}
+  .notes li{margin:4px 0;font-size:14.5px}
+
+  /* ---------- acts ---------- */
+  .act{margin:34px 0 10px;display:flex;align-items:center;gap:12px}
+  .act .num{background:var(--red);color:#fff;font-weight:700;border-radius:10px;padding:6px 12px;font-size:14px;letter-spacing:1px}
+  .act h2{margin:0;font-size:20px;letter-spacing:.5px}
+  .act .goal{margin-left:auto;font-size:13px;color:var(--dim);text-align:right}
+
+  .flow{position:relative;padding-left:26px}
+  .flow:before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--line)}
+
+  .step{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:13px 16px;margin:12px 0;transition:opacity .18s, filter .18s}
+  .step:before{content:"";position:absolute;left:-22px;top:20px;width:11px;height:11px;border-radius:50%;
+    background:var(--panel2);border:2px solid var(--line)}
+  .step.me:before{background:var(--gold);border-color:var(--gold)}
+  .step.dimmed{opacity:.24;filter:saturate(.2)}
+  .step h4{margin:0 0 6px;font-size:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .step p{margin:4px 0 0;font-size:14.5px;color:#d3d6de}
+  .step p.small{font-size:13px;color:var(--dim)}
+  .who{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:999px;padding:2px 9px;font-size:12.5px;white-space:nowrap}
+  .who .dot{width:8px;height:8px;border-radius:50%}
+  .tag{font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:6px;
+    background:#2a2f45;color:var(--dim)}
+  .tag.all{background:#2f4030;color:#a8e0a0}
+  .tag.tp{background:#1f3550;color:#8cc6f0}
+  .tag.boss{background:#4a2020;color:#f0a0a0}
+  .tag.loot{background:#3d3418;color:#e8d15a}
+
+  /* ---------- split grid ---------- */
+  .splitbanner{background:var(--red);color:#fff;font-weight:700;letter-spacing:1.5px;text-align:center;
+    border-radius:10px;padding:9px;margin:18px 0 4px;font-size:14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px;margin:12px 0}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;
+    transition:opacity .18s, filter .18s}
+  .card.dimmed{opacity:.24;filter:saturate(.2)}
+  .card.me{border-color:var(--gold)}
+  .card .ttl{font-size:13px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
+  .card .duo{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+  .card p{margin:0;font-size:13.5px;color:#cfd3dd}
+
+  /* ---------- footer blocks ---------- */
+  .endblock{background:linear-gradient(180deg,#12251a,#171922);border:1px solid #2c4a35;border-radius:14px;
+    padding:16px 20px;margin:26px 0}
+  .endblock h3{margin:0 0 10px;color:#8fe0a0;font-size:15px;letter-spacing:1.2px;text-transform:uppercase}
+  .endblock ul{margin:0;padding-left:20px}
+  .endblock li{margin:5px 0;font-size:14.5px}
+  .warn{color:var(--gold);font-weight:600}
+
+  .quickref{margin:26px 0}
+  .quickref h3{font-size:15px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel2);font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--dim)}
+  tr:last-child td{border-bottom:none}
+  tr.dimmed{opacity:.25}
+  td .who{margin:0}
+  .scroll{overflow-x:auto}
+  footer{text-align:center;color:var(--dim);font-size:12.5px;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Season 15 Ladder Reset — NORMAL</h1>
+  <div class="sub">Dewablo Strat, adapted for our 8-man · Start → Baal → Cows → lvl 25+</div>
+</header>
+
+<div class="rosterbox">
+  <h2>Our Team — tap your name to highlight only your steps</h2>
+  <p class="hint">Tapping a name dims everything that isn't your job. Tap again (or "Show everyone") to see the whole plan.</p>
+  <div class="chips" id="chips"></div>
+</div>
+
+<div class="notes">
+  <h3>Rules for the whole run</h3>
+  <ul>
+    <li>Clear <b>every champ pack</b> and high-density mob group you pass. Don't walk past XP.</li>
+    <li><b>Less time in town.</b> Gear comes from killing and looting, not shopping.</li>
+    <li><b>Level 8:</b> gamble a 3-row belt and buy your Act 1 merc.</li>
+    <li>Call out in voice when you're moving, splitting, or dropping a TP. Nobody guesses.</li>
+  </ul>
+</div>
+
+<!-- ================= ACT 1 ================= -->
+<div class="act"><span class="num">ACT 1</span><h2>Den → Tristram → Countess split → Andariel</h2><div class="goal">Target: lvl 12–14 by Andy</div></div>
+<div class="flow" id="act1">
+
+  <div class="step" data-who="taxi druid">
+    <h4><span class="tag tp">Scout</span> Stony Field TP</h4>
+    <div class="duo" data-names="taxi druid"></div>
+    <p><b>Zinski (Sorc)</b> and <b>Creamsicles (Druid)</b> run straight for Stony Field and leave a TP there.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele">
+    <h4><span class="tag">Quest</span> Clear the Den of Evil</h4>
+    <p>Everyone else (<b>Bonk, XiLeD88, Augural, Not Pavico, Fkityolo, bArracooN</b>) clears Den. Take the skill point.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele">
+    <h4><span class="tag tp">TP</span> Bonk portals the group to Stones</h4>
+    <p>As soon as Den is done, <b>Bonk (Barb)</b> drops the TP so the group jumps to Stony Field.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele">
+    <h4><span class="tag">Clear</span> Stony Field + Underground Passage</h4>
+    <p>Group clears Stones and runs Underground Passage. <b>Leave a TP at Stones.</b></p>
+  </div>
+
+  <div class="step" data-who="taxi druid">
+    <h4><span class="tag tp">Scout</span> Find Black Marsh, then push toward Andy</h4>
+    <p><b>Zinski + Creamsicles</b> keep running together to find <b>Black Marsh</b>, drop a TP at the WP, then continue pathing toward the Monastery / Andariel.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele">
+    <h4><span class="tag">Quest</span> Find the Tree of Inifuss</h4>
+    <p>The other six hunt down the Tree. Once found → back to town, turn in the scroll, <b>make Tristram</b>.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele">
+    <h4><span class="tag loot">Loot</span> Run Tristram — Bonk KEEPS the Leg</h4>
+    <p>Everyone <b>except Zinski and Creamsicles</b> runs Trist together. <b class="warn">Bonk holds Wirt's Leg all the way to Cows — do not sell it, do not drop it.</b></p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele">
+    <h4><span class="tag">Travel</span> Everyone grabs the Black Marsh WP</h4>
+    <p>Take the WP Zinski + Creamsicles opened. Now we split.</p>
+  </div>
+
+  <div class="splitbanner">⚔ THIS IS WHERE THE GROUP SPLITS ⚔</div>
+  <div class="grid">
+    <div class="card" data-who="tele druid">
+      <div class="ttl">1 · Rush to Andy</div>
+      <div class="duo" data-names="tele druid"></div>
+      <p>Path Black Marsh → Tamoe → Monastery → Catacombs. Drop TPs at champ packs. Call out when you hit <b>Outer Cloister</b> and again at <b>Cata 3</b>.</p>
+    </div>
+    <div class="card" data-who="taxi warlock">
+      <div class="ttl">2 · Countess in MAIN game</div>
+      <div class="duo" data-names="taxi warlock"></div>
+      <p>Run Countess in the main game. When bArracooN calls "Outer Cloister," you two can make a <b>new game</b> and run a second Countess.</p>
+    </div>
+    <div class="card" data-who="zon pally">
+      <div class="ttl">3 · Duo Countess</div>
+      <div class="duo" data-names="zon pally"></div>
+      <p>Make your own game, run Countess on repeat. Hunting Tal / Ral / Ort / Thul for Spirits + Insight.</p>
+    </div>
+    <div class="card" data-who="sin barb">
+      <div class="ttl">4 · Duo Countess</div>
+      <div class="duo" data-names="sin barb"></div>
+      <p>Make your own game, run Countess on repeat. <b>Bonk still has the Leg.</b></p>
+    </div>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+    <h4><span class="tag boss">Boss</span> Regroup → Andariel</h4>
+    <p>When <b>bArracooN + Creamsicles</b> reach <b>Catacombs 3</b>, everyone finishes their current Countess run and rejoins the main game. Full 8-man kills Andy.</p>
+  </div>
+</div>
+
+<!-- ================= ACT 2 ================= -->
+<div class="act"><span class="num">ACT 2</span><h2>Sewers · Halls · Viper · Summoner · Duriel</h2><div class="goal">Target: lvl 18–20 by Duriel</div></div>
+<div class="flow" id="act2">
+
+  <div class="step" data-who="barb">
+    <h4><span class="tag tp">Solo</span> Bonk leaps the Sewers</h4>
+    <p><b>Bonk (Barb)</b> uses Leap to blast through the Sewers, <b>drops a TP at Radament</b>, then joins the Halls team.</p>
+  </div>
+
+  <div class="splitbanner">TWO TEAMS</div>
+  <div class="grid">
+    <div class="card" data-who="tele warlock">
+      <div class="ttl">Viper Team</div>
+      <div class="duo" data-names="tele warlock"></div>
+      <p>Run <b>Dry Hills → Far Oasis → Viper Temple</b>. Drop a TP at <b>Maggot Lair</b> so bArracooN can tele from there at lvl 18. Start clearing Viper.</p>
+    </div>
+    <div class="card" data-who="zon pally taxi druid sin barb">
+      <div class="ttl">Halls Team</div>
+      <div class="duo" data-names="zon pally taxi druid sin barb"></div>
+      <p>Run to <b>Halls of the Dead</b> and clear it. <b class="warn">Bring the extra Horadric Cubes back to town</b> — everyone needs one.</p>
+    </div>
+  </div>
+
+  <div class="step" data-who="zon pally taxi druid sin barb">
+    <h4><span class="tag loot">Loot</span> Clear Radament</h4>
+    <p>Halls team clears Rada next. <b class="warn">Grab the extra skill books and bring them to town</b> so everyone gets a point.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+    <h4><span class="tag all">All 8</span> Viper Temple (if not done)</h4>
+    <p>If Viper isn't cleared by the time Halls + Rada are finished, <b>everyone</b> joins bArracooN and Augural for the Amulet pop.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+    <h4><span class="tag all">All 8</span> Summoner — and shop</h4>
+    <p>Everyone runs Summoner together. <b>This is the shopping window</b> — res / life / mana gear, especially for the two Sorcs. Be quick.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+    <h4><span class="tag boss">Boss</span> Clear the main Tomb → Duriel</h4>
+    <p>Clear the true tomb on the way through, then all 8 kill Duriel.</p>
+  </div>
+</div>
+
+<!-- ================= ACT 3 ================= -->
+<div class="act"><span class="num">ACT 3</span><h2>Level check · Organs · Travincal · Mephisto</h2><div class="goal">Everyone must be lvl 20</div></div>
+<div class="flow" id="act3">
+
+  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+    <h4><span class="tag">Gate</span> Anyone under lvl 20 runs Tombs</h4>
+    <p>If you're not <b>lvl 20</b>, run Tombs until you are. Take a killer with you — <b>Augural (Warlock)</b> or <b>Not Pavico (Sin)</b>. Once 20, join the main game and help with organs.</p>
+  </div>
+
+  <div class="splitbanner">TWO TELEPORTERS OUT FRONT</div>
+  <div class="grid">
+    <div class="card" data-who="tele">
+      <div class="ttl">Path to Travincal</div>
+      <div class="duo" data-names="tele"></div>
+      <p>Teleport toward Travincal, <b>dropping TPs at every champ pack</b> for the group to hop.</p>
+    </div>
+    <div class="card" data-who="taxi">
+      <div class="ttl">Organ Run</div>
+      <div class="duo" data-names="taxi"></div>
+      <p>Teleport for the <b>organs</b> (Eye, Heart, Brain), also dropping TPs at champ packs.</p>
+    </div>
+    <div class="card" data-who="barb pally warlock sin zon druid">
+      <div class="ttl">Everyone Else</div>
+      <div class="duo" data-names="barb pally warlock sin zon druid"></div>
+      <p><b>TP hop</b> between the portals the Sorcs drop and clear the packs. Free XP, no walking.</p>
+    </div>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+    <h4><span class="tag all">All 8</span> Travincal</h4>
+    <p>Everyone runs Trav together. Then <b>bArracooN teleports to Mephisto</b> and the group follows for the kill.</p>
+  </div>
+</div>
+
+<!-- ================= ACT 4 ================= -->
+<div class="act"><span class="num">ACT 4</span><h2>Izual · Chaos Sanctuary · Diablo</h2><div class="goal">+2 skill points from Izual</div></div>
+<div class="flow" id="act4">
+
+  <div class="step" data-who="tele">
+    <h4><span class="tag tp">Rush</span> bArracooN teleports to Izual</h4>
+    <p>Drop a TP on Izual, then keep going to the <b>River of Flame WP</b>.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon taxi druid">
+    <h4><span class="tag boss">Boss</span> Everyone else kills Izual</h4>
+    <p>Take the TP, kill Izzy, <b>take the +2 skill points</b>.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+    <h4><span class="tag all">All 8</span> Full Chaos Sanctuary clear → Diablo</h4>
+    <p>bArracooN drops a TP at the entrance to Chaos. <b>We run all of Chaos</b> — every seal, every pack — then Diablo.</p>
+  </div>
+</div>
+
+<!-- ================= ACT 5 ================= -->
+<div class="act"><span class="num">ACT 5</span><h2>Shenk · Barbs · Anya · Ancients · Baal</h2><div class="goal">Target: lvl 24+ at Baal</div></div>
+<div class="flow" id="act5">
+
+  <div class="step" data-who="tele">
+    <h4><span class="tag tp">Rush</span> Shenk WP TP, then keep moving</h4>
+    <p><b>bArracooN</b> heads to Shenk's WP, drops a TP, and immediately keeps teleporting onward.</p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon taxi druid">
+    <h4><span class="tag">Clear</span> Everyone else kills Shenk</h4>
+    <p>Take the WP + TP and clear Shenk and the surrounding packs.</p>
+  </div>
+
+  <div class="splitbanner">RESCUE THE BARBARIANS</div>
+  <div class="grid">
+    <div class="card" data-who="taxi">
+      <div class="ttl">Finds the Barbs</div>
+      <div class="duo" data-names="taxi"></div>
+      <p><b>Zinski</b> runs / teles Frigid Highlands to locate the Barbarian cages and drops TPs.</p>
+    </div>
+    <div class="card" data-who="barb pally warlock sin zon druid">
+      <div class="ttl">Everyone Else</div>
+      <div class="duo" data-names="barb pally warlock sin zon druid"></div>
+      <p><b>TP hop</b> to Zinski's portals and clear out the Barb rescue.</p>
+    </div>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+    <h4><span class="tag">Quest</span> Anya</h4>
+    <p>bArracooN drops a TP at the <b>Anya entrance</b> so Zinski can teleport straight to her; everyone else clears in. <b>Take the +1 all res scroll.</b></p>
+  </div>
+
+  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+    <h4><span class="tag boss">Boss</span> Ancients → Throne Room → Baal</h4>
+    <p>bArracooN continues to Ancients, we all do the fight, then he teles through Worldstone to the Throne. <b>All 8 for Baal.</b></p>
+  </div>
+</div>
+
+<div class="endblock">
+  <h3>✔ After Baal — before Nightmare</h3>
+  <ul>
+    <li><b>Bonk opens Cows</b> with Wirt's Leg + Tome of Town Portal in the cube. Run Cows until <b>everyone is lvl 25</b>.</li>
+    <li class="warn">LOOK FOR 4-SOCKET BASES: white swords and polearms.</li>
+    <li>Plain <b>Broadswords</b> and <b>Long Swords</b> from <b>Arreat Plateau</b> onward in Act 5 can roll <b>4 sockets</b>.</li>
+    <li><b>Crystal Swords</b> and <b>Polearms (not Bardiche)</b> from Arreat Plateau up to Worldstone also roll 4 sockets.</li>
+    <li>At lvl 25 → <b>Normal Baal runs</b> until everyone is <b>lvl 30–40</b>, then move to Nightmare.</li>
+  </ul>
+</div>
+
+<div class="quickref">
+  <h3>Quick reference — who does what in Normal</h3>
+  <div class="scroll">
+  <table id="qr">
+    <thead><tr><th>Player</th><th>Act 1</th><th>Act 2</th><th>Act 3–5</th></tr></thead>
+    <tbody>
+      <tr data-who="tele"><td data-names="tele"></td><td>Den → Tree → Trist. Then <b>rush Andy with Creamsicles</b></td><td>Dry Hills → Viper with Augural. <b>Tele at lvl 18</b></td><td>Lead teleporter: Trav, Meph, Izzy, Chaos, Shenk, Anya, Ancients, Baal. Drop TPs at champ packs</td></tr>
+      <tr data-who="taxi"><td data-names="taxi"></td><td>Stones TP + Black Marsh with Creamsicles → <b>Countess with Augural</b></td><td>Halls team + Radament</td><td>Organ teleporter (lvl 20+), Barb rescue in A5, Anya tele</td></tr>
+      <tr data-who="barb"><td data-names="barb"></td><td>Den, Stones TP, Tree, Trist — <b>KEEPS THE LEG</b> → duo Countess with Not Pavico</td><td><b>Leap Sewers</b>, TP at Rada, join Halls</td><td>TP hop + clear with the group. Opens Cows at the end</td></tr>
+      <tr data-who="pally"><td data-names="pally"></td><td>Den, Stones, Tree, Trist → <b>duo Countess with Fkityolo</b></td><td>Halls team + Radament</td><td>Tombs to 20 if needed, then TP hop and clear with group</td></tr>
+      <tr data-who="warlock"><td data-names="warlock"></td><td>Den, Stones, Tree, Trist → <b>Countess in main game with Zinski</b></td><td><b>Viper team</b> with bArracooN</td><td>Main killer for underleveled players in Tombs, then group clear</td></tr>
+      <tr data-who="sin"><td data-names="sin"></td><td>Den, Stones, Tree, Trist → <b>duo Countess with Bonk</b></td><td>Halls team + Radament</td><td>Tombs support / group clear, TP hop</td></tr>
+      <tr data-who="zon"><td data-names="zon"></td><td>Den, Stones, Tree, Trist → <b>duo Countess with XiLeD88</b></td><td>Halls team + Radament</td><td>Tombs to 20 if needed, then TP hop and clear with group</td></tr>
+      <tr data-who="druid"><td data-names="druid"></td><td>Stones TP + Black Marsh with Zinski → <b>rush Andy with bArracooN</b></td><td>Halls team + Radament</td><td>Group clear, TP hop, Oak Sage up for the team</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<footer>Adapted from the Dewablo Strat S15 doc for our 8-man. Normal difficulty only.</footer>
+</div>
+
+<script>
+const ROSTER = [
+  {k:'barb',    name:'Bonk',        role:'Barb (BO Barb)',  c:'var(--barb)'},
+  {k:'pally',   name:'XiLeD88',     role:'Pally',           c:'var(--pally)'},
+  {k:'warlock', name:'Augural',     role:'Warlock',         c:'var(--warlock)'},
+  {k:'sin',     name:'Not Pavico',  role:'Sin',             c:'var(--sin)'},
+  {k:'zon',     name:'Fkityolo',    role:'Zon',             c:'var(--zon)'},
+  {k:'druid',   name:'Creamsicles', role:'Druid',           c:'var(--druid)'},
+  {k:'taxi',    name:'Zinski',      role:'Sorc (Taxi)',     c:'var(--taxi)'},
+  {k:'tele',    name:'bArracooN',   role:'TeleSorc',        c:'var(--tele)'}
+];
+const byKey = Object.fromEntries(ROSTER.map(p=>[p.k,p]));
+
+function pill(k){
+  const p = byKey[k];
+  if(!p) return '';
+  return '<span class="who"><span class="dot" style="background:'+p.c+'"></span>'+p.name+' <span style="color:var(--dim)">· '+p.role+'</span></span>';
+}
+
+// build roster chips
+const chips = document.getElementById('chips');
+ROSTER.forEach(p=>{
+  const b = document.createElement('button');
+  b.className='chip'; b.dataset.k=p.k;
+  b.innerHTML='<span class="dot" style="background:'+p.c+'"></span><b>'+p.name+'</b> <span class="role">'+p.role+'</span>';
+  b.onclick=()=>select(p.k);
+  chips.appendChild(b);
+});
+const clr = document.createElement('button');
+clr.className='clear'; clr.textContent='Show everyone';
+clr.onclick=()=>select(null);
+chips.appendChild(clr);
+
+// fill duo name lists
+document.querySelectorAll('[data-names]').forEach(el=>{
+  el.innerHTML = el.dataset.names.trim().split(/\s+/).map(pill).join(' ');
+});
+
+let active = null;
+function select(k){
+  active = (active===k) ? null : k;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on', c.dataset.k===active));
+  document.querySelectorAll('.step, .card, #qr tbody tr').forEach(el=>{
+    const who = (el.dataset.who||'').split(/\s+/);
+    const mine = active && who.includes(active);
+    el.classList.toggle('dimmed', !!active && !mine);
+    el.classList.toggle('me', !!mine);
+  });
+}
+</script>
+</body>
+</html>
