@@ -3,6 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ============================================================
+     TEAM SYNC CONFIG  —  paste your 3 Firebase values here
+     ============================================================ -->
+<script>
+window.FIREBASE_CONFIG = {
+  apiKey:      "AIzaSyBUEpkz2T_anuvOasQFO2yRpIB5AS-5pdo",
+  databaseURL: "https://d2r-s15-default-rtdb.firebaseio.com",
+  projectId:   "d2r-s15"
+};
+window.RUN_KEY = "s15-normal";   // change this to start a fresh run
+</script>
 <title>S15 Ladder Reset — NORMAL Flow Chart</title>
 <style>
   :root{
@@ -99,6 +110,41 @@
   .endblock li{margin:5px 0;font-size:14.5px}
   .warn{color:var(--gold);font-weight:600}
 
+
+  /* ---------- progress + identity ---------- */
+  .idbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px;
+    padding-top:13px;border-top:1px solid var(--line)}
+  .idbar label{font-size:13px;color:var(--dim);white-space:nowrap}
+  #me{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;
+    padding:7px 10px;font-size:14px;font-family:inherit;height:36px}
+  .status{font-size:12px;border-radius:999px;padding:5px 11px;white-space:nowrap;border:1px solid var(--line)}
+  .status.live{color:#8fe0a0;border-color:#2c4a35;background:#12251a}
+  .status.local{color:var(--gold);border-color:#4a3a20;background:#221a12}
+  .status.error{color:#f0a0a0;border-color:#4a2020;background:#251212}
+  .bar{height:7px;border-radius:999px;background:var(--panel2);overflow:hidden;margin-top:12px;
+    border:1px solid var(--line)}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4ad991,#8fe0a0);
+    transition:width .3s}
+  .bartxt{font-size:12.5px;color:var(--dim);margin-top:6px}
+  .actprog{font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:999px;
+    padding:3px 10px;white-space:nowrap}
+
+  /* ---------- checkboxes ---------- */
+  .chk{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:2px solid #3a4055;
+    background:#12141d;cursor:pointer;color:transparent;font-size:14px;font-weight:900;
+    line-height:1;padding:0;display:inline-flex;align-items:center;justify-content:center;
+    transition:.15s}
+  .chk:hover{border-color:var(--gold)}
+  .done .chk{background:#2f9e5f;border-color:#2f9e5f;color:#fff}
+  .step.done{border-color:#2c4a35}
+  .step.done > h4{color:var(--dim)}
+  .card.done{border-color:#2c4a35}
+  .card{position:relative}
+  .card .chk{position:absolute;top:12px;right:12px}
+  .card .ttl{padding-right:32px}
+  .byline{font-size:11.5px;color:#8fe0a0;font-weight:600;white-space:nowrap;letter-spacing:.3px}
+  .card .byline{display:block;margin-top:8px}
+
   .quickref{margin:26px 0}
   .quickref h3{font-size:15px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
   table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
@@ -124,6 +170,14 @@
   <h2>Our Team — tap your name to highlight only your steps</h2>
   <p class="hint">Tapping a name dims everything that isn't your job. Tap again (or "Show everyone") to see the whole plan.</p>
   <div class="chips" id="chips"></div>
+  <div class="idbar">
+    <label for="me">Checking things off as:</label>
+    <select id="me"><option value="">— pick your name —</option></select>
+    <span class="status local" id="status">checking…</span>
+    <button class="clear" id="resetAll">Reset run</button>
+  </div>
+  <div class="bar"><i id="barFill"></i></div>
+  <div class="bartxt" id="barTxt">0 of 0 done</div>
 </div>
 
 <div class="notes">
@@ -140,72 +194,72 @@
 <div class="act"><span class="num">ACT 1</span><h2>Den → Tristram → Countess split → Andariel</h2><div class="goal">Target: lvl 12–14 by Andy</div></div>
 <div class="flow" id="act1">
 
-  <div class="step" data-who="taxi druid">
+  <div class="step" data-id="act1--stony-field-tp" data-who="taxi druid">
     <h4><span class="tag tp">Scout</span> Stony Field TP</h4>
     <div class="duo" data-names="taxi druid"></div>
     <p><b>Zinski (Sorc)</b> and <b>Creamsicles (Druid)</b> run straight for Stony Field and leave a TP there.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele">
+  <div class="step" data-id="act1--clear-the-den-of-evil" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag">Quest</span> Clear the Den of Evil</h4>
     <p>Everyone else (<b>Bonk, XiLeD88, Augural, Not Pavico, Fkityolo, bArracooN</b>) clears Den. Take the skill point.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele">
+  <div class="step" data-id="act1--bonk-portals-the-group-to-stones" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag tp">TP</span> Bonk portals the group to Stones</h4>
     <p>As soon as Den is done, <b>Bonk (Barb)</b> drops the TP so the group jumps to Stony Field.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele">
+  <div class="step" data-id="act1--stony-field-underground-passage" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag">Clear</span> Stony Field + Underground Passage</h4>
     <p>Group clears Stones and runs Underground Passage. <b>Leave a TP at Stones.</b></p>
   </div>
 
-  <div class="step" data-who="taxi druid">
+  <div class="step" data-id="act1--find-black-marsh-then-push-toward-andy" data-who="taxi druid">
     <h4><span class="tag tp">Scout</span> Find Black Marsh, then push toward Andy</h4>
     <p><b>Zinski + Creamsicles</b> keep running together to find <b>Black Marsh</b>, drop a TP at the WP, then continue pathing toward the Monastery / Andariel.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele">
+  <div class="step" data-id="act1--find-the-tree-of-inifuss" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag">Quest</span> Find the Tree of Inifuss</h4>
     <p>The other six hunt down the Tree. Once found → back to town, turn in the scroll, <b>make Tristram</b>.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele">
+  <div class="step" data-id="act1--run-tristram-bonk-keeps-the-leg" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag loot">Loot</span> Run Tristram — Bonk KEEPS the Leg</h4>
     <p>Everyone <b>except Zinski and Creamsicles</b> runs Trist together. <b class="warn">Bonk holds Wirt's Leg all the way to Cows — do not sell it, do not drop it.</b></p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele">
+  <div class="step" data-id="act1--everyone-grabs-the-black-marsh-wp" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag">Travel</span> Everyone grabs the Black Marsh WP</h4>
     <p>Take the WP Zinski + Creamsicles opened. Now we split.</p>
   </div>
 
   <div class="splitbanner">⚔ THIS IS WHERE THE GROUP SPLITS ⚔</div>
   <div class="grid">
-    <div class="card" data-who="tele druid">
+    <div class="card" data-id="act1--1-rush-to-andy" data-who="tele druid">
       <div class="ttl">1 · Rush to Andy</div>
       <div class="duo" data-names="tele druid"></div>
       <p>Path Black Marsh → Tamoe → Monastery → Catacombs. Drop TPs at champ packs. Call out when you hit <b>Outer Cloister</b> and again at <b>Cata 3</b>.</p>
     </div>
-    <div class="card" data-who="taxi warlock">
+    <div class="card" data-id="act1--2-main-game-countess" data-who="taxi warlock">
       <div class="ttl">2 · Main-Game Countess</div>
       <div class="duo" data-names="taxi warlock"></div>
       <p>Run Countess in the main game. When bArracooN calls "Outer Cloister," you two can make a <b>new game</b> and run a second Countess.</p>
     </div>
-    <div class="card" data-who="zon pally">
+    <div class="card" data-id="act1--3-duo-countess" data-who="zon pally">
       <div class="ttl">3 · Duo Countess</div>
       <div class="duo" data-names="zon pally"></div>
       <p>Make your own game, run Countess on repeat. Hunting Tal / Ral / Ort / Thul for Spirits + Insight.</p>
     </div>
-    <div class="card" data-who="sin barb">
+    <div class="card" data-id="act1--4-duo-countess" data-who="sin barb">
       <div class="ttl">4 · Duo Countess</div>
       <div class="duo" data-names="sin barb"></div>
       <p>Make your own game, run Countess on repeat. <b>Bonk still has the Leg.</b></p>
     </div>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step" data-id="act1--regroup-andariel" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag boss">Boss</span> Regroup → Andariel</h4>
     <p>When <b>bArracooN + Creamsicles</b> reach <b>Catacombs 3</b>, everyone finishes their current Countess run and rejoins the main game. Full 8-man kills Andy.</p>
   </div>
@@ -215,41 +269,41 @@
 <div class="act"><span class="num">ACT 2</span><h2>Sewers · Halls · Viper · Summoner · Duriel</h2><div class="goal">Target: lvl 18–20 by Duriel</div></div>
 <div class="flow" id="act2">
 
-  <div class="step" data-who="barb">
+  <div class="step" data-id="act2--bonk-leaps-the-sewers" data-who="barb">
     <h4><span class="tag tp">Solo</span> Bonk leaps the Sewers</h4>
     <p><b>Bonk (Barb)</b> uses Leap to blast through the Sewers, <b>drops a TP at Radament</b>, then joins the Halls team.</p>
   </div>
 
   <div class="splitbanner">TWO TEAMS</div>
   <div class="grid">
-    <div class="card" data-who="tele warlock">
+    <div class="card" data-id="act2--viper-team" data-who="tele warlock">
       <div class="ttl">Viper Team</div>
       <div class="duo" data-names="tele warlock"></div>
       <p>Run <b>Dry Hills → Far Oasis → Viper Temple</b>. Drop a TP at <b>Maggot Lair</b> so bArracooN can tele from there at lvl 18. Start clearing Viper.</p>
     </div>
-    <div class="card" data-who="zon pally taxi druid sin barb">
+    <div class="card" data-id="act2--halls-team" data-who="zon pally taxi druid sin barb">
       <div class="ttl">Halls Team</div>
       <div class="duo" data-names="zon pally taxi druid sin barb"></div>
       <p>Run to <b>Halls of the Dead</b> and clear it. <b class="warn">Bring the extra Horadric Cubes back to town</b> — everyone needs one.</p>
     </div>
   </div>
 
-  <div class="step" data-who="zon pally taxi druid sin barb">
+  <div class="step" data-id="act2--clear-radament" data-who="zon pally taxi druid sin barb">
     <h4><span class="tag loot">Loot</span> Clear Radament</h4>
     <p>Halls team clears Rada next. <b class="warn">Grab the extra skill books and bring them to town</b> so everyone gets a point.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step" data-id="act2--viper-temple-if-not-done" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag all">All 8</span> Viper Temple (if not done)</h4>
     <p>If Viper isn't cleared by the time Halls + Rada are finished, <b>everyone</b> joins bArracooN and Augural for the Amulet pop.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step" data-id="act2--summoner-and-shop" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag all">All 8</span> Summoner — and shop</h4>
     <p>Everyone runs Summoner together. <b>This is the shopping window</b> — res / life / mana gear, especially for the two Sorcs. Be quick.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step" data-id="act2--clear-the-main-tomb-duriel" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag boss">Boss</span> Clear the main Tomb → Duriel</h4>
     <p>Clear the true tomb on the way through, then all 8 kill Duriel.</p>
   </div>
@@ -259,31 +313,31 @@
 <div class="act"><span class="num">ACT 3</span><h2>Level check · Organs · Travincal · Mephisto</h2><div class="goal">Everyone must be lvl 20</div></div>
 <div class="flow" id="act3">
 
-  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step" data-id="act3--anyone-under-lvl-20-runs-tombs" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag">Gate</span> Anyone under lvl 20 runs Tombs</h4>
     <p>If you're not <b>lvl 20</b>, run Tombs until you are. Take a killer with you — <b>Augural (Warlock)</b> or <b>Not Pavico (Sin)</b>. Once 20, join the main game and help with organs.</p>
   </div>
 
   <div class="splitbanner">TWO TELEPORTERS OUT FRONT</div>
   <div class="grid">
-    <div class="card" data-who="tele">
+    <div class="card" data-id="act3--path-to-travincal" data-who="tele">
       <div class="ttl">Path to Travincal</div>
       <div class="duo" data-names="tele"></div>
       <p>Teleport toward Travincal, <b>dropping TPs at every champ pack</b> for the group to hop.</p>
     </div>
-    <div class="card" data-who="taxi">
+    <div class="card" data-id="act3--organ-run" data-who="taxi">
       <div class="ttl">Organ Run</div>
       <div class="duo" data-names="taxi"></div>
       <p>Teleport for the <b>organs</b> (Eye, Heart, Brain), also dropping TPs at champ packs.</p>
     </div>
-    <div class="card" data-who="barb pally warlock sin zon druid">
+    <div class="card" data-id="act3--everyone-else" data-who="barb pally warlock sin zon druid">
       <div class="ttl">Everyone Else</div>
       <div class="duo" data-names="barb pally warlock sin zon druid"></div>
       <p><b>TP hop</b> between the portals the Sorcs drop and clear the packs. Free XP, no walking.</p>
     </div>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step" data-id="act3--travincal" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag all">All 8</span> Travincal</h4>
     <p>Everyone runs Trav together. Then <b>bArracooN teleports to Mephisto</b> and the group follows for the kill.</p>
   </div>
@@ -293,17 +347,17 @@
 <div class="act"><span class="num">ACT 4</span><h2>Izual · Chaos Sanctuary · Diablo</h2><div class="goal">+2 skill points from Izual</div></div>
 <div class="flow" id="act4">
 
-  <div class="step" data-who="tele">
+  <div class="step" data-id="act4--barracoon-teleports-to-izual" data-who="tele">
     <h4><span class="tag tp">Rush</span> bArracooN teleports to Izual</h4>
     <p>Drop a TP on Izual, then keep going to the <b>River of Flame WP</b>.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon taxi druid">
+  <div class="step" data-id="act4--everyone-else-kills-izual" data-who="barb pally warlock sin zon taxi druid">
     <h4><span class="tag boss">Boss</span> Everyone else kills Izual</h4>
     <p>Take the TP, kill Izzy, <b>take the +2 skill points</b>.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step" data-id="act4--full-chaos-sanctuary-clear-diablo" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag all">All 8</span> Full Chaos Sanctuary clear → Diablo</h4>
     <p>bArracooN drops a TP at the entrance to Chaos. <b>We run all of Chaos</b> — every seal, every pack — then Diablo.</p>
   </div>
@@ -313,36 +367,36 @@
 <div class="act"><span class="num">ACT 5</span><h2>Shenk · Barbs · Anya · Ancients · Baal</h2><div class="goal">Target: lvl 24+ at Baal</div></div>
 <div class="flow" id="act5">
 
-  <div class="step" data-who="tele">
+  <div class="step" data-id="act5--shenk-wp-tp-then-keep-moving" data-who="tele">
     <h4><span class="tag tp">Rush</span> Shenk WP TP, then keep moving</h4>
     <p><b>bArracooN</b> heads to Shenk's WP, drops a TP, and immediately keeps teleporting onward.</p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon taxi druid">
+  <div class="step" data-id="act5--everyone-else-kills-shenk" data-who="barb pally warlock sin zon taxi druid">
     <h4><span class="tag">Clear</span> Everyone else kills Shenk</h4>
     <p>Take the WP + TP and clear Shenk and the surrounding packs.</p>
   </div>
 
   <div class="splitbanner">RESCUE THE BARBARIANS</div>
   <div class="grid">
-    <div class="card" data-who="taxi">
+    <div class="card" data-id="act5--finds-the-barbs" data-who="taxi">
       <div class="ttl">Finds the Barbs</div>
       <div class="duo" data-names="taxi"></div>
       <p><b>Zinski</b> runs / teles Frigid Highlands to locate the Barbarian cages and drops TPs.</p>
     </div>
-    <div class="card" data-who="barb pally warlock sin zon druid">
+    <div class="card" data-id="act5--everyone-else" data-who="barb pally warlock sin zon druid">
       <div class="ttl">Everyone Else</div>
       <div class="duo" data-names="barb pally warlock sin zon druid"></div>
       <p><b>TP hop</b> to Zinski's portals and clear out the Barb rescue.</p>
     </div>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step" data-id="act5--anya" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag">Quest</span> Anya</h4>
     <p>bArracooN drops a TP at the <b>Anya entrance</b> so Zinski can teleport straight to her; everyone else clears in. <b>Take the +1 all res scroll.</b></p>
   </div>
 
-  <div class="step" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step" data-id="act5--ancients-throne-room-baal" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag boss">Boss</span> Ancients → Throne Room → Baal</h4>
     <p>bArracooN continues to Ancients, we all do the fight, then he teles through Worldstone to the Throne. <b>All 8 for Baal.</b></p>
   </div>
@@ -436,6 +490,122 @@ document.querySelectorAll('[data-names]').forEach(el=>{
   });
 })();
 
+
+/* ============================================================
+   SHARED PROGRESS
+   ============================================================ */
+const LS = { get(k){try{return localStorage.getItem(k)}catch(e){return null}},
+             set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
+let ME = LS.get('d2r-me') || '';
+let STATE = {};
+let pushOne = null, pushClear = null;
+
+const sel = document.getElementById('me');
+ROSTER.forEach(p=>{
+  const o=document.createElement('option');
+  o.value=p.name; o.textContent=p.name+' · '+p.role; sel.appendChild(o);
+});
+sel.value = ME;
+sel.onchange = ()=>{ ME = sel.value; LS.set('d2r-me', ME); };
+
+function mkChk(id){
+  const b=document.createElement('button');
+  b.className='chk'; b.type='button'; b.textContent='✓';
+  b.setAttribute('aria-label','mark complete');
+  b.onclick=(ev)=>{ ev.stopPropagation(); toggle(id); };
+  return b;
+}
+document.querySelectorAll('.step[data-id]').forEach(el=>{
+  const h=el.querySelector('h4');
+  h.prepend(mkChk(el.dataset.id));
+  const by=document.createElement('span'); by.className='byline'; h.appendChild(by);
+});
+document.querySelectorAll('.card[data-id]').forEach(el=>{
+  el.appendChild(mkChk(el.dataset.id));
+  const by=document.createElement('span'); by.className='byline'; el.appendChild(by);
+});
+// per-act progress pills
+document.querySelectorAll('.flow[id]').forEach(f=>{
+  const head=f.previousElementSibling;
+  if(head && head.classList.contains('act')){
+    const sp=document.createElement('span');
+    sp.className='actprog'; sp.dataset.for=f.id; head.appendChild(sp);
+  }
+});
+
+function toggle(id){
+  if(!ME){
+    sel.focus();
+    sel.style.borderColor='var(--gold)';
+    setTimeout(()=>sel.style.borderColor='',1200);
+    return;
+  }
+  const rec = STATE[id] ? null : { by: ME, at: Date.now() };
+  if(rec) STATE[id]=rec; else delete STATE[id];
+  render();
+  if(pushOne) pushOne(id, rec); else saveLocal();
+}
+function saveLocal(){ LS.set('d2r-state-'+window.RUN_KEY, JSON.stringify(STATE)); }
+
+function render(){
+  const colourOf = n => (ROSTER.find(p=>p.name===n)||{}).c || 'var(--dim)';
+  document.querySelectorAll('[data-id]').forEach(el=>{
+    const rec = STATE[el.dataset.id];
+    el.classList.toggle('done', !!rec);
+    const by = el.querySelector('.byline');
+    if(by){
+      by.textContent = rec ? '✓ '+rec.by : '';
+      by.style.color = rec ? colourOf(rec.by) : '';
+    }
+  });
+  const all=[...document.querySelectorAll('[data-id]')];
+  const done=all.filter(e=>STATE[e.dataset.id]).length;
+  const pct= all.length? Math.round(done/all.length*100):0;
+  document.getElementById('barFill').style.width=pct+'%';
+  document.getElementById('barTxt').textContent=done+' of '+all.length+' steps done · '+pct+'%';
+  document.querySelectorAll('.actprog').forEach(sp=>{
+    const f=document.getElementById(sp.dataset.for);
+    const items=[...f.querySelectorAll('[data-id]')];
+    const d=items.filter(e=>STATE[e.dataset.id]).length;
+    sp.textContent=d+'/'+items.length;
+    sp.style.color = d===items.length && items.length ? '#8fe0a0' : '';
+  });
+}
+
+// reset (two-click confirm, no blocking dialog)
+const rst=document.getElementById('resetAll');
+let armed=false, armTimer=null;
+rst.onclick=()=>{
+  if(!armed){
+    armed=true; rst.textContent='Click again to wipe'; rst.style.color='#f0a0a0';
+    rst.style.borderColor='#4a2020';
+    armTimer=setTimeout(()=>{armed=false;rst.textContent='Reset run';rst.style.color='';rst.style.borderColor='';},4000);
+    return;
+  }
+  clearTimeout(armTimer); armed=false; rst.textContent='Reset run'; rst.style.color=''; rst.style.borderColor='';
+  STATE={}; render();
+  if(pushClear) pushClear(); else saveLocal();
+};
+
+function setStatus(kind,msg){
+  const el=document.getElementById('status');
+  el.className='status '+kind;
+  el.textContent = kind==='live' ? '● synced with team'
+                 : kind==='local' ? '○ local only — not shared'
+                 : '● sync error';
+  if(msg) el.title=msg;
+}
+
+window.APP = {
+  remoteState(v){ STATE = v || {}; render(); },
+  setPush(one, clear){ pushOne=one; pushClear=clear; },
+  status:setStatus
+};
+
+// start from local cache so the page is useful before/without Firebase
+try{ STATE = JSON.parse(LS.get('d2r-state-'+window.RUN_KEY)||'{}'); }catch(e){ STATE={}; }
+render();
+
 let active = null;
 function select(k){
   active = (active===k) ? null : k;
@@ -447,6 +617,30 @@ function select(k){
     el.classList.toggle('me', !!mine);
   });
 }
+</script>
+
+<script type="module">
+  const CFG = window.FIREBASE_CONFIG || {};
+  const ready = CFG.databaseURL && !/PASTE/.test(CFG.databaseURL);
+  const SDK = 'https://www.gstatic.com/firebasejs/12.17.1/';
+
+  if(!ready){
+    window.APP.status('local', 'Firebase config not filled in yet');
+  } else {
+    try{
+      const { initializeApp } = await import(SDK + 'firebase-app.js');
+      const { getDatabase, ref, onValue, set, remove } = await import(SDK + 'firebase-database.js');
+      const db   = getDatabase(initializeApp(CFG));
+      const root = ref(db, 'runs/' + window.RUN_KEY + '/steps');
+      onValue(root,
+        snap => { window.APP.remoteState(snap.val() || {}); window.APP.status('live'); },
+        err  => window.APP.status('error', err.message));
+      window.APP.setPush(
+        (id, rec) => rec ? set(ref(db,'runs/'+window.RUN_KEY+'/steps/'+id), rec)
+                         : remove(ref(db,'runs/'+window.RUN_KEY+'/steps/'+id)),
+        ()        => remove(root));
+    }catch(e){ window.APP.status('error', e.message); }
+  }
 </script>
 </body>
 </html>
