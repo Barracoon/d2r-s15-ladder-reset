@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ============================================================
+     TEAM SYNC CONFIG — same Firebase project as the Normal page
+     ============================================================ -->
+<script>
+window.FIREBASE_CONFIG = {
+  apiKey:      "AIzaSyBUEpkz2T_anuvOasQFO2yRpIB5AS-5pdo",
+  databaseURL: "https://d2r-s15-default-rtdb.firebaseio.com",
+  projectId:   "d2r-s15"
+};
+window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
+</script>
+<title>S15 — Nightmare &amp; Hell</title>
+<style>
+  :root{
+    --bg:#0e0f13; --panel:#171922; --panel2:#1e2130; --line:#2c3040;
+    --txt:#e8e6e3; --dim:#9aa0b0; --gold:#d8b56a; --red:#c8503f;
+    --tele:#6b8cff; --taxi:#38cfe0; --barb:#c69a72; --pally:#f172b0;
+    --warlock:#b98af0; --sin:#4ad991; --zon:#f2d95c; --druid:#ef8b4b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 16px 80px}
+
+  header{text-align:center;padding:18px 0 6px}
+  h1{margin:0;font-size:clamp(22px,4.4vw,34px);letter-spacing:.5px;color:var(--gold)}
+  .sub{color:var(--dim);font-size:14px;margin-top:6px}
+
+  /* ---------- roster / filter ---------- */
+  .rosterbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:18px 0}
+  .rosterbox h2{margin:0 0 4px;font-size:14px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
+  .hint{font-size:13px;color:var(--dim);margin:0 0 12px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .chip{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:999px;padding:0 14px 0 10px;cursor:pointer;transition:.15s;font-size:14px;
+    user-select:none;white-space:nowrap;height:36px;line-height:1}
+  .chip:hover{border-color:var(--gold)}
+  .chip .dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+  .chip b{font-weight:700}
+  .n{font-weight:700}
+  .n-tele{color:var(--tele)} .n-taxi{color:var(--taxi)} .n-barb{color:var(--barb)}
+  .n-pally{color:var(--pally)} .n-warlock{color:var(--warlock)} .n-sin{color:var(--sin)}
+  .n-zon{color:var(--zon)} .n-druid{color:var(--druid)}
+  .chip span.role{color:var(--dim);font-size:12.5px}
+  .chip.on{background:#2a2f45;border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+  .clear{font-family:inherit;font-size:14px;line-height:1;color:var(--dim);background:none;
+    border:1px dashed var(--line);border-radius:999px;padding:0 16px;cursor:pointer;
+    white-space:nowrap;height:36px;display:inline-flex;align-items:center}
+  .clear:hover{color:var(--txt);border-color:var(--gold)}
+
+  /* ---------- notes ---------- */
+  .notes{background:linear-gradient(180deg,#221a12,#191720);border:1px solid #4a3a20;border-radius:14px;padding:14px 18px;margin:0 0 22px}
+  .notes h3{margin:0 0 8px;color:var(--gold);font-size:14px;letter-spacing:1.2px;text-transform:uppercase}
+  .notes ul{margin:0;padding-left:20px}
+  .notes li{margin:4px 0;font-size:14.5px}
+
+  /* ---------- acts ---------- */
+  .act{margin:34px 0 10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .act .num{background:var(--red);color:#fff;font-weight:700;border-radius:10px;padding:6px 12px;
+    font-size:14px;letter-spacing:1px;white-space:nowrap;flex:0 0 auto}
+  .act h2{margin:0;font-size:20px;letter-spacing:.5px}
+  .act .goal{margin-left:auto;font-size:13px;color:var(--dim);text-align:right;white-space:nowrap}
+
+  .flow{position:relative;padding-left:26px}
+  .flow:before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--line)}
+
+  .step{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:13px 16px;margin:12px 0;transition:opacity .18s, filter .18s}
+  .step:before{content:"";position:absolute;left:-22px;top:20px;width:11px;height:11px;border-radius:50%;
+    background:var(--panel2);border:2px solid var(--line)}
+  .step.me:before{background:var(--gold);border-color:var(--gold)}
+  .step.dimmed{opacity:.24;filter:saturate(.2)}
+  .step h4{margin:0 0 6px;font-size:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .step p{margin:4px 0 0;font-size:14.5px;color:#d3d6de}
+  .step p.small{font-size:13px;color:var(--dim)}
+  .who{display:inline-flex;align-items:center;gap:6px;background:#12141d;border:1px solid var(--line);
+    border-radius:999px;padding:3px 10px;font-size:12.5px;white-space:nowrap;font-weight:700}
+  .who .dot{width:8px;height:8px;border-radius:50%}
+  .tag{font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:6px;
+    background:#2a2f45;color:var(--dim);white-space:nowrap;flex:0 0 auto}
+  .tag.all{background:#2f4030;color:#a8e0a0}
+  .tag.tp{background:#1f3550;color:#8cc6f0}
+  .tag.boss{background:#4a2020;color:#f0a0a0}
+  .tag.loot{background:#3d3418;color:#e8d15a}
+
+  /* ---------- split grid ---------- */
+  .splitbanner{background:var(--red);color:#fff;font-weight:700;letter-spacing:1.2px;text-align:center;
+    border-radius:10px;padding:9px 12px;margin:18px 0 4px;font-size:13.5px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px;margin:12px 0}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;
+    transition:opacity .18s, filter .18s}
+  .card.dimmed{opacity:.24;filter:saturate(.2)}
+  .card.me{border-color:var(--gold)}
+  .card .ttl{font-size:12.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--gold);
+    margin-bottom:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .duo{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+  .card p{margin:0;font-size:13.5px;color:#cfd3dd}
+
+  /* ---------- footer blocks ---------- */
+  .endblock{background:linear-gradient(180deg,#12251a,#171922);border:1px solid #2c4a35;border-radius:14px;
+    padding:16px 20px;margin:26px 0}
+  .endblock h3{margin:0 0 10px;color:#8fe0a0;font-size:15px;letter-spacing:1.2px;text-transform:uppercase}
+  .endblock ul{margin:0;padding-left:20px}
+  .endblock li{margin:5px 0;font-size:14.5px}
+  .warn{color:var(--gold);font-weight:600}
+
+
+  /* ---------- progress + identity ---------- */
+  .idbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px;
+    padding-top:13px;border-top:1px solid var(--line)}
+  .idbar label{font-size:13px;color:var(--dim);white-space:nowrap}
+  #me{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;
+    padding:7px 10px;font-size:14px;font-family:inherit;height:36px}
+  .status{font-size:12px;border-radius:999px;padding:5px 11px;white-space:nowrap;border:1px solid var(--line)}
+  .status.live{color:#8fe0a0;border-color:#2c4a35;background:#12251a}
+  .status.local{color:var(--gold);border-color:#4a3a20;background:#221a12}
+  .status.error{color:#f0a0a0;border-color:#4a2020;background:#251212}
+  .bar{height:7px;border-radius:999px;background:var(--panel2);overflow:hidden;margin-top:12px;
+    border:1px solid var(--line)}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4ad991,#8fe0a0);
+    transition:width .3s}
+  .bartxt{font-size:12.5px;color:var(--dim);margin-top:6px}
+  .actprog{font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:999px;
+    padding:3px 10px;white-space:nowrap}
+
+  /* ---------- checkboxes ---------- */
+  .chk{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:2px solid #3a4055;
+    background:#12141d;cursor:pointer;color:transparent;font-size:14px;font-weight:900;
+    line-height:1;padding:0;display:inline-flex;align-items:center;justify-content:center;
+    transition:.15s}
+  .chk:hover{border-color:var(--gold)}
+  .done .chk{background:#2f9e5f;border-color:#2f9e5f;color:#fff}
+  .step.done{border-color:#2c4a35}
+  .step.done > h4{color:var(--dim)}
+  .card.done{border-color:#2c4a35}
+  .card{position:relative}
+  .card .chk{position:absolute;top:12px;right:12px}
+  .card .ttl{padding-right:32px}
+  .byline{font-size:11.5px;color:#8fe0a0;font-weight:600;white-space:nowrap;letter-spacing:.3px}
+  .card .byline{display:block;margin-top:8px}
+
+
+  .nav{display:flex;justify-content:center;gap:8px;margin:14px 0 0}
+  .nav a{font-size:13.5px;color:var(--dim);text-decoration:none;border:1px solid var(--line);
+    border-radius:999px;padding:7px 16px;transition:.15s}
+  .nav a:hover{color:var(--txt);border-color:var(--gold)}
+  .nav a.on{color:#0e0f13;background:var(--gold);border-color:var(--gold);font-weight:700}
+
+  .quickref{margin:26px 0}
+  .quickref h3{font-size:15px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel2);font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--dim)}
+  tr:last-child td{border-bottom:none}
+  tr.dimmed{opacity:.25}
+  td .who{margin:0}
+  .scroll{overflow-x:auto}
+  footer{text-align:center;color:var(--dim);font-size:12.5px;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Season 15 — NIGHTMARE &amp; HELL</h1>
+  <div class="sub">Two Sorcs and a Barb run the map · everyone else farms Countess between calls</div>
+  <div class="nav">
+  <a href="index.html">Normal</a>
+  <a class="on" href="nightmare.html">Nightmare &amp; Hell</a>
+</div>
+</header>
+
+<div class="rosterbox">
+  <h2>Tap your name to highlight only your steps</h2>
+  <p class="hint">Tapping a name dims everything that isn't your job. Tap again (or "Show everyone") to see the whole plan.</p>
+  <div class="chips" id="chips"></div>
+  <div class="idbar">
+    <label for="me">Checking things off as:</label>
+    <select id="me"><option value="">— pick your name —</option></select>
+    <span class="status local" id="status">checking…</span>
+    <button class="clear" id="resetAll">Reset run</button>
+  </div>
+  <div class="bar"><i id="barFill"></i></div>
+  <div class="bartxt" id="barTxt">0 of 0 done</div>
+  <p class="hint" style="margin:10px 0 0">Nobody has to tick anything — this is here if it helps mid-run
+  and ignorable if it doesn't. Checking a step also marks everything before it done.</p>
+</div>
+
+<div class="notes">
+  <h3>How Nightmare is different</h3>
+  <ul>
+    <li>Come in at <b>lvl 30–40</b> off Normal Baal runs. Don't enter under-levelled.</li>
+    <li><b>bArracooN, Bonk and Zinski do the moving.</b> Everyone else farms <b>NM Countess</b> in their own game between calls.</li>
+    <li>Countess is the whole point: <b>Tal · Eth · Ral · Ort · Thul · Amn · Sol · Shael</b> for Spirits and Insight.</li>
+    <li><b>Answer the callback fast.</b> When you're called for a boss, the teleporters are sitting there waiting on you.</li>
+    <li><b>Skip Cain</b> in Act 1. We don't need him.</li>
+  </ul>
+</div>
+
+<div class="act"><span class="num">NM · ACT 1</span><h2>Den · Black Marsh · Countess · Andariel</h2></div>
+<div class="flow" id="nm1">
+
+  <div class="step" data-id="nm1--barracoon-teleports-to-black-marsh-bonk-copi" data-who="tele barb">
+    <h4><span class="tag tp">Rush</span> bArracooN teleports to Black Marsh, Bonk copies</h4>
+    <p><b>bArracooN</b> teles to the Black Marsh WP and drops a TP for <b>Bonk</b> to copy, then the two of them push on toward Andariel. <b class="warn">Skip Cain.</b></p>
+  </div>
+
+  <div class="step" data-id="nm1--everyone-else-clears-the-den" data-who="pally warlock sin zon druid taxi">
+    <h4><span class="tag">Quest</span> Everyone else clears the Den</h4>
+    <p><b>XiLeD88, Augural, Not Pavico, Fkityolo, Creamsicles</b> and <b>Zinski</b> run Den for the skill point.</p>
+  </div>
+
+  <div class="step" data-id="nm1--grab-the-black-marsh-wp" data-who="pally warlock sin zon druid taxi">
+    <h4><span class="tag">Travel</span> Grab the Black Marsh WP</h4>
+    <p>Take the WP off bArracooN's portal. If he's still hunting for Catacombs 4, <b>clear Countess in the main game</b> while you wait.</p>
+  </div>
+
+  <div class="splitbanner">⚔ EVERYONE SPLITS TO FARM COUNTESS ⚔</div>
+  <div class="grid">
+    <div class="card" data-id="nm1--pathing-to-andy" data-who="tele barb">
+      <div class="ttl">Pathing to Andy</div>
+      <div class="duo" data-names="tele barb"></div>
+      <p><b>Bonk</b> leaves safety TPs and keeps the pots and TP tomes stocked. Call the group the moment you're at Andy.</p>
+    </div>
+    <div class="card" data-id="nm1--main-game-countess" data-who="warlock taxi">
+      <div class="ttl">Main-Game Countess</div>
+      <div class="duo" data-names="warlock taxi"></div>
+      <p>Clear Countess in the main game, then TP hop any champ packs bArracooN dropped on the way.</p>
+    </div>
+    <div class="card" data-id="nm1--duo-countess" data-who="pally zon">
+      <div class="ttl">Duo Countess</div>
+      <div class="duo" data-names="pally zon"></div>
+      <p>Own game, Countess on repeat. Duo if you can't clear her fast enough solo yet.</p>
+    </div>
+    <div class="card" data-id="nm1--duo-countess-2" data-who="sin druid">
+      <div class="ttl">Duo Countess</div>
+      <div class="duo" data-names="sin druid"></div>
+      <p>Own game, Countess on repeat. Duo if you can't clear her fast enough solo yet.</p>
+    </div>
+  </div>
+
+  <div class="step" data-id="nm1--called-back-for-andariel" data-who="tele barb pally warlock sin zon druid taxi">
+    <h4><span class="tag boss">Boss</span> Called back for Andariel</h4>
+    <p>bArracooN and Bonk call it — everyone drops what they're doing and comes back for the kill.</p>
+  </div>
+</div>
+
+<div class="act"><span class="num">NM · ACT 2</span><h2>Staff · Viper · Radament · Summoner · Duriel</h2></div>
+<div class="flow" id="nm2">
+
+  <div class="step" data-id="nm2--teleport-act-2-grab-the-staff-head-to-viper" data-who="tele barb">
+    <h4><span class="tag tp">Rush</span> Teleport Act 2, grab the staff, head to Viper</h4>
+    <p><b>bArracooN + Bonk</b> tele through Act 2, collect the Horadric Staff pieces and push to the Viper Temple.</p>
+  </div>
+
+  <div class="step" data-id="nm2--solo-duo-nm-countess" data-who="pally warlock sin zon druid taxi">
+    <h4><span class="tag">Farm</span> Solo / duo NM Countess</h4>
+    <p>Keep running Countess until you're called back for the <b>Viper amulet pop</b>.</p>
+  </div>
+
+  <div class="step" data-id="nm2--viper-amulet-pop" data-who="tele barb pally warlock sin zon druid taxi">
+    <h4><span class="tag boss">Boss</span> Viper amulet pop</h4>
+    <p>Everyone back for the Amulet. Then <b>bArracooN teleports toward the Summoner</b>.</p>
+  </div>
+
+  <div class="step" data-id="nm2--radament-bring-a-book-to-town" data-who="taxi barb pally warlock sin zon druid">
+    <h4><span class="tag loot">Loot</span> Radament — bring a book to town</h4>
+    <p><b>Zinski</b> teleports to Rada. <b>Everyone except bArracooN</b> helps clear. <b class="warn">Bring the skill book back to town.</b></p>
+  </div>
+
+  <div class="step" data-id="nm2--summoner-then-duriel" data-who="tele barb pally warlock sin zon druid taxi">
+    <h4><span class="tag boss">Boss</span> Summoner, then Duriel</h4>
+    <p>All 8 for the Summoner. bArracooN teles to Duriel — <b>this is the shopping window</b>: res / life / mana boots, gloves and belts, especially for <b>bArracooN</b> and <b>Zinski</b>. Then everyone in for Duriel.</p>
+  </div>
+</div>
+
+<div class="act"><span class="num">NM · ACT 3</span><h2>Organs · Travincal · Mephisto</h2></div>
+<div class="flow" id="nm3">
+
+  <div class="splitbanner">THREE MOVE, FIVE FARM</div>
+  <div class="grid">
+    <div class="card" data-id="nm3--lead-teleporter" data-who="tele">
+      <div class="ttl">Lead Teleporter</div>
+      <div class="duo" data-names="tele"></div>
+      <p>Teleport Act 3, pathing toward Travincal. Call the group when Trav is up.</p>
+    </div>
+    <div class="card" data-id="nm3--support" data-who="barb">
+      <div class="ttl">Support</div>
+      <div class="duo" data-names="barb"></div>
+      <p>Leave <b>safety TPs</b> when needed. Buy and carry <b>mana / life pots and TP tomes</b> for both Sorcs.</p>
+    </div>
+    <div class="card" data-id="nm3--organs-gidbinn" data-who="taxi">
+      <div class="ttl">Organs + Gidbinn</div>
+      <div class="duo" data-names="taxi"></div>
+      <p>Grab the organs and help kill Gidbinn. <b class="warn">Wait to turn the quest in.</b></p>
+    </div>
+    <div class="card" data-id="nm3--still-farming" data-who="pally warlock sin zon druid">
+      <div class="ttl">Still Farming</div>
+      <div class="duo" data-names="pally warlock sin zon druid"></div>
+      <p>Back to solo NM Countess until you're called for Travincal.</p>
+    </div>
+  </div>
+
+  <div class="step" data-id="nm3--travincal-mephisto" data-who="tele barb pally warlock sin zon druid taxi">
+    <h4><span class="tag all">All 8</span> Travincal → Mephisto</h4>
+    <p>Everyone in for Trav. Then bArracooN teleports to Meph and the group follows.</p>
+  </div>
+</div>
+
+<div class="act"><span class="num">NM · ACT 4</span><h2>Izual · Chaos · Diablo</h2></div>
+<div class="flow" id="nm4">
+
+  <div class="step" data-id="nm4--tele-to-izual-drop-tp-continue-to-river-wp" data-who="tele">
+    <h4><span class="tag tp">Rush</span> Tele to Izual, drop TP, continue to River WP</h4>
+    <p><b>bArracooN</b> drops the portal on Izual and keeps moving to the River of Flame WP.</p>
+  </div>
+
+  <div class="step" data-id="nm4--everyone-else-kills-izual" data-who="barb pally warlock sin zon druid taxi">
+    <h4><span class="tag boss">Boss</span> Everyone else kills Izual</h4>
+    <p>Take the TP, kill him, <b>take the skill points</b>.</p>
+  </div>
+
+  <div class="step" data-id="nm4--full-chaos-clear-diablo" data-who="tele barb pally warlock sin zon druid taxi">
+    <h4><span class="tag all">All 8</span> Full Chaos clear → Diablo</h4>
+    <p>bArracooN drops a TP at the start of Chaos. <b>We run all of it</b>, then Diablo.</p>
+  </div>
+</div>
+
+<div class="act"><span class="num">NM · ACT 5</span><h2>Shenk · Barbs · Anya · Ancients · Baal</h2></div>
+<div class="flow" id="nm5">
+
+  <div class="step" data-id="nm5--frigid-highlands-tp-on-the-way-to-anya" data-who="tele">
+    <h4><span class="tag tp">Rush</span> Frigid Highlands TP on the way to Anya</h4>
+    <p><b>bArracooN</b> heads toward Anya and drops a TP at the <b>Frigid Highlands WP</b> on the way.</p>
+  </div>
+
+  <div class="splitbanner">TWO JOBS OFF THAT PORTAL</div>
+  <div class="grid">
+    <div class="card" data-id="nm5--finds-the-barbs" data-who="taxi">
+      <div class="ttl">Finds the Barbs</div>
+      <div class="duo" data-names="taxi"></div>
+      <p><b>Zinski</b> takes the Frigid TP and hunts down the Barbarian cages.</p>
+    </div>
+    <div class="card" data-id="nm5--shenk-then-rescue" data-who="barb pally warlock sin zon druid">
+      <div class="ttl">Shenk, then Rescue</div>
+      <div class="duo" data-names="barb pally warlock sin zon druid"></div>
+      <p>Kill Shenk first, then hop to Zinski's portals and help free the Barbs.</p>
+    </div>
+  </div>
+
+  <div class="step" data-id="nm5--anya" data-who="tele barb pally warlock sin zon druid taxi">
+    <h4><span class="tag">Quest</span> Anya</h4>
+    <p>bArracooN drops a TP at the <b>Anya entrance</b> for <b>Zinski</b>, then carries on to Ancients. Everyone clears Anya. <b>Take the res scroll.</b></p>
+  </div>
+
+  <div class="step" data-id="nm5--ancients-throne-room-baal" data-who="tele barb pally warlock sin zon druid taxi">
+    <h4><span class="tag boss">Boss</span> Ancients → Throne Room → Baal</h4>
+    <p>All 8 for Ancients, then bArracooN teles to the Throne and we run the waves.</p>
+  </div>
+</div>
+
+<div class="act"><span class="num">HELL</span><h2>Same shape as Nightmare — one decision changes</h2></div>
+<div class="flow" id="hell">
+
+  <div class="step" data-id="hell--do-we-still-need-insights-and-spirits" data-who="tele barb pally warlock sin zon druid taxi">
+    <h4><span class="tag">Decide</span> Do we still need Insights and Spirits?</h4>
+    <p><b>This is the only real call to make in Hell.</b> Check as a group before Act 1 — if anyone is still missing an Insight or Spirit, we split for NM Countess exactly like above. If everyone's geared, <b>nobody splits</b> and we all just TP hop together, which is much faster.</p>
+  </div>
+
+  <div class="step" data-id="hell--if-yes-keep-running-nm-countess" data-who="pally warlock sin zon druid taxi">
+    <h4><span class="tag">Farm</span> If yes — keep running NM Countess</h4>
+    <p>Same rhythm as Nightmare: farm between calls, come back for every boss. <b class="warn">NM Countess, not Hell Countess</b> — Hell Countess drops higher runes but she's far slower to kill at this gear level.</p>
+  </div>
+
+  <div class="step" data-id="hell--if-no-everybody-tp-hops" data-who="tele barb pally warlock sin zon druid taxi">
+    <h4><span class="tag all">All 8</span> If no — everybody TP hops</h4>
+    <p>bArracooN leads exactly as in Nightmare, dropping TPs at champ packs, and the whole group moves as one unit through all five acts.</p>
+  </div>
+
+  <div class="step" data-id="hell--act-order-is-unchanged" data-who="tele barb pally warlock sin zon druid taxi">
+    <h4><span class="tag boss">Boss</span> Act order is unchanged</h4>
+    <p>Andy → Staff / Viper / Rada / Summoner / Duriel → Organs / Trav / Meph → Izzy / Chaos / Diablo → Shenk / Barbs / Anya / Ancients / Baal. <b>Watch your resistances</b> — Hell hits the -100 all res penalty and immunities start mattering.</p>
+  </div>
+</div>
+
+<div class="endblock">
+  <h3>✔ Reminders that bite people in NM and Hell</h3>
+  <ul>
+    <li><b>Bonk buys the pots and TPs.</b> The Sorcs burn through both and shouldn't be town-porting for them.</li>
+    <li><b>Don't turn the Gidbinn quest in early</b> in Act 3.</li>
+    <li>Shop for the Sorcs at the Duriel window — <b>res, life, mana</b> on boots, gloves and belts.</li>
+    <li>Hell applies a <b>-100 to all resistances</b>. Get everyone to max res before you push it.</li>
+    <li>Come back when called. The teleporter standing at a boss is the most expensive thing in the run.</li>
+  </ul>
+</div>
+
+<footer>Adapted from the Dewablo Strat S15 doc for our 8-man. Nightmare and Hell.</footer>
+
+</div>
+<script>
+
+const ROSTER = [
+  {k:'barb',    name:'Bonk',        role:'Barb (BO Barb)',  c:'var(--barb)'},
+  {k:'pally',   name:'XiLeD88',     role:'Pally',           c:'var(--pally)'},
+  {k:'warlock', name:'Augural',     role:'Warlock',         c:'var(--warlock)'},
+  {k:'sin',     name:'Not Pavico',  role:'Sin',             c:'var(--sin)'},
+  {k:'zon',     name:'Fkityolo',    role:'Zon',             c:'var(--zon)'},
+  {k:'druid',   name:'Creamsicles', role:'Druid',           c:'var(--druid)'},
+  {k:'taxi',    name:'Zinski',      role:'Sorc (Taxi)',     c:'var(--taxi)'},
+  {k:'tele',    name:'bArracooN',   role:'TeleSorc',        c:'var(--tele)'}
+];
+const byKey = Object.fromEntries(ROSTER.map(p=>[p.k,p]));
+
+function pill(k){
+  const p = byKey[k];
+  if(!p) return '';
+  return '<span class="who"><span class="dot" style="background:'+p.c+'"></span>'+
+         '<span style="color:'+p.c+'">'+p.name+'</span>'+
+         '<span style="color:var(--dim);font-weight:400"> · '+p.role+'</span></span>';
+}
+
+// build roster chips
+const chips = document.getElementById('chips');
+ROSTER.forEach(p=>{
+  const b = document.createElement('button');
+  b.className='chip'; b.dataset.k=p.k;
+  b.innerHTML='<span class="dot" style="background:'+p.c+'"></span>'+
+              '<b style="color:'+p.c+'">'+p.name+'</b> <span class="role">'+p.role+'</span>';
+  b.onclick=()=>select(p.k);
+  chips.appendChild(b);
+});
+const clr = document.createElement('button');
+clr.className='clear'; clr.textContent='Show everyone';
+clr.onclick=()=>select(null);
+chips.appendChild(clr);
+
+// fill duo name lists
+document.querySelectorAll('[data-names]').forEach(el=>{
+  el.innerHTML = el.dataset.names.trim().split(/\s+/).map(pill).join(' ');
+});
+
+// colour every in-text mention of a player by their class
+(function colourNames(){
+  const targets = document.querySelectorAll('.step p, .card p, #qr td, .endblock li, .step h4');
+  const list = [...ROSTER].sort((a,b)=>b.name.length-a.name.length);
+  targets.forEach(el=>{
+    let h = el.innerHTML;
+    list.forEach(p=>{
+      const rx = new RegExp('(?![^<]*>)' + p.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g');
+      h = h.replace(rx, '<span class="n n-'+p.k+'">'+p.name+'</span>');
+    });
+    el.innerHTML = h;
+  });
+})();
+
+
+/* ============================================================
+   SHARED PROGRESS
+   ============================================================ */
+const LS = { get(k){try{return localStorage.getItem(k)}catch(e){return null}},
+             set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
+let ME = LS.get('d2r-me') || '';
+let STATE = {};
+let pushOne = null, pushClear = null;
+
+const sel = document.getElementById('me');
+ROSTER.forEach(p=>{
+  const o=document.createElement('option');
+  o.value=p.name; o.textContent=p.name+' · '+p.role; sel.appendChild(o);
+});
+sel.value = ME;
+sel.onchange = ()=>{ ME = sel.value; LS.set('d2r-me', ME); };
+
+function mkChk(id){
+  const b=document.createElement('button');
+  b.className='chk'; b.type='button'; b.textContent='✓';
+  b.setAttribute('aria-label','mark complete');
+  b.onclick=(ev)=>{ ev.stopPropagation(); toggle(id); };
+  return b;
+}
+document.querySelectorAll('.step[data-id]').forEach(el=>{
+  const h=el.querySelector('h4');
+  h.prepend(mkChk(el.dataset.id));
+  const by=document.createElement('span'); by.className='byline'; h.appendChild(by);
+});
+document.querySelectorAll('.card[data-id]').forEach(el=>{
+  el.appendChild(mkChk(el.dataset.id));
+  const by=document.createElement('span'); by.className='byline'; el.appendChild(by);
+});
+// per-act progress pills
+document.querySelectorAll('.flow[id]').forEach(f=>{
+  const head=f.previousElementSibling;
+  if(head && head.classList.contains('act')){
+    const sp=document.createElement('span');
+    sp.className='actprog'; sp.dataset.for=f.id; head.appendChild(sp);
+  }
+});
+
+/* rank every item in run order; cards inside one split share a rank
+   because those groups happen in parallel, not in sequence */
+function rankMap(){
+  let r=0, lastGrid=null; const map=new Map();
+  document.querySelectorAll('[data-id]').forEach(el=>{
+    const g=el.closest('.grid');
+    if(!(g && g===lastGrid)) r++;
+    lastGrid=g;
+    map.set(el.dataset.id, r);
+  });
+  return map;
+}
+
+function toggle(id){
+  if(!ME){
+    sel.focus();
+    sel.style.borderColor='var(--gold)';
+    setTimeout(()=>sel.style.borderColor='',1200);
+    return;
+  }
+  const turningOn = !STATE[id];
+  const rank = rankMap(), mine = rank.get(id);
+  const changed = [];
+
+  if(turningOn){
+    // you can't have done step 9 without doing 1-8
+    rank.forEach((r,key)=>{
+      if(r <= mine && !STATE[key] && (r < mine || key === id)){
+        STATE[key] = { by: ME, at: Date.now() };
+        changed.push([key, STATE[key]]);
+      }
+    });
+  } else {
+    // unchecking rewinds everything after it
+    rank.forEach((r,key)=>{
+      if(r >= mine && STATE[key] && (r > mine || key === id)){
+        delete STATE[key];
+        changed.push([key, null]);
+      }
+    });
+  }
+  render();
+  if(pushOne) changed.forEach(([k,v])=>pushOne(k,v)); else saveLocal();
+}
+function saveLocal(){ LS.set('d2r-state-'+window.RUN_KEY, JSON.stringify(STATE)); }
+
+function render(){
+  const colourOf = n => (ROSTER.find(p=>p.name===n)||{}).c || 'var(--dim)';
+  document.querySelectorAll('[data-id]').forEach(el=>{
+    const rec = STATE[el.dataset.id];
+    el.classList.toggle('done', !!rec);
+    const by = el.querySelector('.byline');
+    if(by){
+      by.textContent = rec ? '✓ '+rec.by : '';
+      by.style.color = rec ? colourOf(rec.by) : '';
+    }
+  });
+  const all=[...document.querySelectorAll('[data-id]')];
+  const done=all.filter(e=>STATE[e.dataset.id]).length;
+  const pct= all.length? Math.round(done/all.length*100):0;
+  document.getElementById('barFill').style.width=pct+'%';
+  document.getElementById('barTxt').textContent=done+' of '+all.length+' steps done · '+pct+'%';
+  document.querySelectorAll('.actprog').forEach(sp=>{
+    const f=document.getElementById(sp.dataset.for);
+    const items=[...f.querySelectorAll('[data-id]')];
+    const d=items.filter(e=>STATE[e.dataset.id]).length;
+    sp.textContent=d+'/'+items.length;
+    sp.style.color = d===items.length && items.length ? '#8fe0a0' : '';
+  });
+}
+
+// reset (two-click confirm, no blocking dialog)
+const rst=document.getElementById('resetAll');
+let armed=false, armTimer=null;
+rst.onclick=()=>{
+  if(!armed){
+    armed=true; rst.textContent='Click again to wipe'; rst.style.color='#f0a0a0';
+    rst.style.borderColor='#4a2020';
+    armTimer=setTimeout(()=>{armed=false;rst.textContent='Reset run';rst.style.color='';rst.style.borderColor='';},4000);
+    return;
+  }
+  clearTimeout(armTimer); armed=false; rst.textContent='Reset run'; rst.style.color=''; rst.style.borderColor='';
+  STATE={}; render();
+  if(pushClear) pushClear(); else saveLocal();
+};
+
+function setStatus(kind,msg){
+  const el=document.getElementById('status');
+  el.className='status '+kind;
+  el.textContent = kind==='live' ? '● synced with team'
+                 : kind==='local' ? '○ local only — not shared'
+                 : '● sync error';
+  if(msg) el.title=msg;
+}
+
+window.APP = {
+  remoteState(v){ STATE = v || {}; render(); },
+  setPush(one, clear){ pushOne=one; pushClear=clear; },
+  status:setStatus
+};
+
+// start from local cache so the page is useful before/without Firebase
+try{ STATE = JSON.parse(LS.get('d2r-state-'+window.RUN_KEY)||'{}'); }catch(e){ STATE={}; }
+render();
+
+let active = null;
+function select(k){
+  active = (active===k) ? null : k;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on', c.dataset.k===active));
+  document.querySelectorAll('.step, .card, #qr tbody tr').forEach(el=>{
+    const who = (el.dataset.who||'').split(/\s+/);
+    const mine = active && who.includes(active);
+    el.classList.toggle('dimmed', !!active && !mine);
+    el.classList.toggle('me', !!mine);
+  });
+}
+
+</script>
+<script type="module">
+  const CFG = window.FIREBASE_CONFIG || {};
+  const ready = CFG.databaseURL && !/PASTE/.test(CFG.databaseURL);
+  const SDK = 'https://www.gstatic.com/firebasejs/12.17.1/';
+
+  if(!ready){
+    window.APP.status('local', 'Firebase config not filled in yet');
+  } else {
+    try{
+      const { initializeApp } = await import(SDK + 'firebase-app.js');
+      const { getDatabase, ref, onValue, set, remove } = await import(SDK + 'firebase-database.js');
+      const db   = getDatabase(initializeApp(CFG));
+      const root = ref(db, 'runs/' + window.RUN_KEY + '/steps');
+      onValue(root,
+        snap => { window.APP.remoteState(snap.val() || {}); window.APP.status('live'); },
+        err  => window.APP.status('error', err.message));
+      window.APP.setPush(
+        (id, rec) => rec ? set(ref(db,'runs/'+window.RUN_KEY+'/steps/'+id), rec)
+                         : remove(ref(db,'runs/'+window.RUN_KEY+'/steps/'+id)),
+        ()        => remove(root));
+    }catch(e){ window.APP.status('error', e.message); }
+  }
+</script>
+</html>
