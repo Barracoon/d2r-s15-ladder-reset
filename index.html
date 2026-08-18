@@ -145,6 +145,13 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   .byline{font-size:11.5px;color:#8fe0a0;font-weight:600;white-space:nowrap;letter-spacing:.3px}
   .card .byline{display:block;margin-top:8px}
 
+
+  .nav{display:flex;justify-content:center;gap:8px;margin:14px 0 0}
+  .nav a{font-size:13.5px;color:var(--dim);text-decoration:none;border:1px solid var(--line);
+    border-radius:999px;padding:7px 16px;transition:.15s}
+  .nav a:hover{color:var(--txt);border-color:var(--gold)}
+  .nav a.on{color:#0e0f13;background:var(--gold);border-color:var(--gold);font-weight:700}
+
   .quickref{margin:26px 0}
   .quickref h3{font-size:15px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
   table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
@@ -164,10 +171,14 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
 <header>
   <h1>Season 15 Ladder Reset — NORMAL</h1>
   <div class="sub">Dewablo Strat, adapted for our 8-man · Start → Baal → Cows → lvl 25+</div>
+  <div class="nav">
+    <a class="on" href="index.html">Normal</a>
+    <a href="nightmare.html">Nightmare &amp; Hell</a>
+  </div>
 </header>
 
 <div class="rosterbox">
-  <h2>Our Team — tap your name to highlight only your steps</h2>
+  <h2>Tap your name to highlight only your steps</h2>
   <p class="hint">Tapping a name dims everything that isn't your job. Tap again (or "Show everyone") to see the whole plan.</p>
   <div class="chips" id="chips"></div>
   <div class="idbar">
@@ -178,6 +189,9 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   </div>
   <div class="bar"><i id="barFill"></i></div>
   <div class="bartxt" id="barTxt">0 of 0 done</div>
+  <p class="hint" style="margin:10px 0 0">Nobody has to tick anything. We only wanted a guide that was
+  easier to follow and got a bit carried away — the checkboxes are here if they're useful mid-run,
+  and completely ignorable if they're not. Checking a step also marks everything before it done.</p>
 </div>
 
 <div class="notes">
@@ -533,6 +547,19 @@ document.querySelectorAll('.flow[id]').forEach(f=>{
   }
 });
 
+/* rank every item in run order; cards inside one split share a rank
+   because those groups happen in parallel, not in sequence */
+function rankMap(){
+  let r=0, lastGrid=null; const map=new Map();
+  document.querySelectorAll('[data-id]').forEach(el=>{
+    const g=el.closest('.grid');
+    if(!(g && g===lastGrid)) r++;
+    lastGrid=g;
+    map.set(el.dataset.id, r);
+  });
+  return map;
+}
+
 function toggle(id){
   if(!ME){
     sel.focus();
@@ -540,10 +567,29 @@ function toggle(id){
     setTimeout(()=>sel.style.borderColor='',1200);
     return;
   }
-  const rec = STATE[id] ? null : { by: ME, at: Date.now() };
-  if(rec) STATE[id]=rec; else delete STATE[id];
+  const turningOn = !STATE[id];
+  const rank = rankMap(), mine = rank.get(id);
+  const changed = [];
+
+  if(turningOn){
+    // you can't have done step 9 without doing 1-8
+    rank.forEach((r,key)=>{
+      if(r <= mine && !STATE[key] && (r < mine || key === id)){
+        STATE[key] = { by: ME, at: Date.now() };
+        changed.push([key, STATE[key]]);
+      }
+    });
+  } else {
+    // unchecking rewinds everything after it
+    rank.forEach((r,key)=>{
+      if(r >= mine && STATE[key] && (r > mine || key === id)){
+        delete STATE[key];
+        changed.push([key, null]);
+      }
+    });
+  }
   render();
-  if(pushOne) pushOne(id, rec); else saveLocal();
+  if(pushOne) changed.forEach(([k,v])=>pushOne(k,v)); else saveLocal();
 }
 function saveLocal(){ LS.set('d2r-state-'+window.RUN_KEY, JSON.stringify(STATE)); }
 
