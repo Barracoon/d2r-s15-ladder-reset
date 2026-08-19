@@ -223,7 +223,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   <div class="bartxt" id="barTxt">0 of 0 done</div>
   <p class="hint" style="margin:10px 0 0">Nobody has to tick anything. We only wanted a guide that was
   easier to follow and got a bit carried away — the checkboxes are here if they're useful mid-run,
-  and completely ignorable if they're not. Checking a step also marks everything before it done.</p>
+  and completely ignorable if they're not. Checking a step also marks the steps before it done — the split groups are tracked separately, so ticking one never touches another.</p>
 </div>
 
 <div class="notes">
@@ -281,7 +281,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     <p>Take the WP Zinski + Creamsicles opened. Now we split.</p>
   </div>
 
-  <div class="splitbanner">⚔ THIS IS WHERE THE GROUP SPLITS ⚔</div>
+  <div class="splitbanner">⚔&nbsp;THIS IS WHERE THE GROUP&nbsp;SPLITS&nbsp;⚔</div>
   <div class="grid">
     <div class="card" data-id="act1--1-rush-to-andy" data-who="tele druid">
       <div class="ttl">1 · Rush to Andy</div>
@@ -449,7 +449,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
 </div>
 
 <div class="endblock">
-  <h3>✔ After Baal — before Nightmare</h3>
+  <h3>✔&nbsp;After Baal — before Nightmare</h3>
   <ul>
     <li><b>Bonk opens Cows</b> with Wirt's Leg + Tome of Town Portal in the cube. Run Cows until <b>everyone is lvl 25</b>.</li>
     <li class="warn">LOOK FOR 4-SOCKET BASES: white swords and polearms.</li>
@@ -596,13 +596,10 @@ document.querySelectorAll('.flow[id]').forEach(f=>{
 /* rank every item in run order; cards inside one split share a rank
    because those groups happen in parallel, not in sequence */
 function rankMap(){
-  let r=0, lastGrid=null; const map=new Map();
-  document.querySelectorAll('[data-id]').forEach(el=>{
-    const g=el.closest('.grid');
-    if(!(g && g===lastGrid)) r++;
-    lastGrid=g;
-    map.set(el.dataset.id, r);
-  });
+  /* only sequential steps get a rank. Split cards are parallel groups doing
+     their own thing, so they are never part of a cascade in either direction. */
+  let r=0; const map=new Map();
+  document.querySelectorAll('.step[data-id]').forEach(el=>{ map.set(el.dataset.id, ++r); });
   return map;
 }
 
@@ -618,25 +615,30 @@ function toggle(id){
     META.startedAt = Date.now();
     if(pushMeta) pushMeta(META); else saveLocal();
   }
-  const rank = rankMap(), mine = rank.get(id);
+  const el = document.querySelector('[data-id="'+id+'"]');
   const changed = [];
 
-  if(turningOn){
-    // you can't have done step 9 without doing 1-8
-    rank.forEach((r,key)=>{
-      if(r <= mine && !STATE[key] && (r < mine || key === id)){
-        STATE[key] = { by: ME, at: Date.now() };
-        changed.push([key, STATE[key]]);
-      }
-    });
+  if(el && el.classList.contains('card')){
+    // a split group only ever toggles itself — never the other groups,
+    // never the shared steps around it
+    if(turningOn){ STATE[id] = { by: ME, at: Date.now() }; changed.push([id, STATE[id]]); }
+    else         { delete STATE[id];                       changed.push([id, null]); }
   } else {
-    // unchecking rewinds everything after it
-    rank.forEach((r,key)=>{
-      if(r >= mine && STATE[key] && (r > mine || key === id)){
-        delete STATE[key];
-        changed.push([key, null]);
-      }
-    });
+    const rank = rankMap(), mine = rank.get(id);
+    if(turningOn){
+      // you can't have done step 9 without doing 1-8
+      rank.forEach((r,key)=>{
+        if(r <= mine && !STATE[key]){
+          STATE[key] = { by: ME, at: Date.now() };
+          changed.push([key, STATE[key]]);
+        }
+      });
+    } else {
+      // unchecking rewinds the steps after it
+      rank.forEach((r,key)=>{
+        if(r >= mine && STATE[key]){ delete STATE[key]; changed.push([key, null]); }
+      });
+    }
   }
   render();
   if(pushOne) changed.forEach(([k,v])=>pushOne(k,v)); else saveLocal();
@@ -739,16 +741,14 @@ if(cs) cs.onclick=()=>{
 /* fill each act's timeline rail up to the last completed step */
 function paintRails(){
   document.querySelectorAll('.flow').forEach(f=>{
-    const items=[...f.querySelectorAll('[data-id]')];
+    // the rail follows the sequential steps only — a split group finishing
+    // early shouldn't drag the gold past the whole block
+    const items=[...f.querySelectorAll('.step[data-id]')];
     const done=items.filter(e=>STATE[e.dataset.id]);
     if(!done.length){ f.style.setProperty('--fill','0px'); return; }
     const last=done[done.length-1];
     const fr=f.getBoundingClientRect(), lr=last.getBoundingClientRect();
-    // stop at the dot of the last done step, or the bottom of a finished split block
-    const anchor = last.classList.contains('card')
-      ? (last.closest('.grid')||last).getBoundingClientRect().bottom
-      : lr.top + 26;
-    const h = Math.max(0, Math.min(anchor - fr.top - 8, fr.height - 16));
+    const h = Math.max(0, Math.min(lr.top + 26 - fr.top - 8, fr.height - 16));
     f.style.setProperty('--fill', h+'px');
   });
 }

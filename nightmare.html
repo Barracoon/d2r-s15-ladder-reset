@@ -222,7 +222,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
   <div class="bar"><i id="barFill"></i></div>
   <div class="bartxt" id="barTxt">0 of 0 done</div>
   <p class="hint" style="margin:10px 0 0">Nobody has to tick anything — this is here if it helps mid-run
-  and ignorable if it doesn't. Checking a step also marks everything before it done.</p>
+  and ignorable if it doesn't. Checking a step also marks the steps before it done — the split groups are tracked separately, so ticking one never touches another.</p>
 </div>
 
 <div class="notes">
@@ -254,7 +254,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
     <p>Take the WP off bArracooN's portal. If he's still hunting for Catacombs 4, <b>clear Countess in the main game</b> while you wait.</p>
   </div>
 
-  <div class="splitbanner">⚔ EVERYONE SPLITS TO FARM COUNTESS ⚔</div>
+  <div class="splitbanner">⚔&nbsp;EVERYONE SPLITS TO FARM&nbsp;COUNTESS&nbsp;⚔</div>
   <div class="grid">
     <div class="card" data-id="nm1--pathing-to-andy" data-who="tele barb">
       <div class="ttl">Pathing to Andy</div>
@@ -423,7 +423,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
 </div>
 
 <div class="endblock">
-  <h3>✔ Reminders that bite people in NM and Hell</h3>
+  <h3>✔&nbsp;Reminders that bite people in NM and Hell</h3>
   <ul>
     <li><b>Bonk buys the pots and TPs.</b> The Sorcs burn through both and shouldn't be town-porting for them.</li>
     <li><b>Don't turn the Gidbinn quest in early</b> in Act 3.</li>
@@ -552,13 +552,10 @@ document.querySelectorAll('.flow[id]').forEach(f=>{
 /* rank every item in run order; cards inside one split share a rank
    because those groups happen in parallel, not in sequence */
 function rankMap(){
-  let r=0, lastGrid=null; const map=new Map();
-  document.querySelectorAll('[data-id]').forEach(el=>{
-    const g=el.closest('.grid');
-    if(!(g && g===lastGrid)) r++;
-    lastGrid=g;
-    map.set(el.dataset.id, r);
-  });
+  /* only sequential steps get a rank. Split cards are parallel groups doing
+     their own thing, so they are never part of a cascade in either direction. */
+  let r=0; const map=new Map();
+  document.querySelectorAll('.step[data-id]').forEach(el=>{ map.set(el.dataset.id, ++r); });
   return map;
 }
 
@@ -574,25 +571,30 @@ function toggle(id){
     META.startedAt = Date.now();
     if(pushMeta) pushMeta(META); else saveLocal();
   }
-  const rank = rankMap(), mine = rank.get(id);
+  const el = document.querySelector('[data-id="'+id+'"]');
   const changed = [];
 
-  if(turningOn){
-    // you can't have done step 9 without doing 1-8
-    rank.forEach((r,key)=>{
-      if(r <= mine && !STATE[key] && (r < mine || key === id)){
-        STATE[key] = { by: ME, at: Date.now() };
-        changed.push([key, STATE[key]]);
-      }
-    });
+  if(el && el.classList.contains('card')){
+    // a split group only ever toggles itself — never the other groups,
+    // never the shared steps around it
+    if(turningOn){ STATE[id] = { by: ME, at: Date.now() }; changed.push([id, STATE[id]]); }
+    else         { delete STATE[id];                       changed.push([id, null]); }
   } else {
-    // unchecking rewinds everything after it
-    rank.forEach((r,key)=>{
-      if(r >= mine && STATE[key] && (r > mine || key === id)){
-        delete STATE[key];
-        changed.push([key, null]);
-      }
-    });
+    const rank = rankMap(), mine = rank.get(id);
+    if(turningOn){
+      // you can't have done step 9 without doing 1-8
+      rank.forEach((r,key)=>{
+        if(r <= mine && !STATE[key]){
+          STATE[key] = { by: ME, at: Date.now() };
+          changed.push([key, STATE[key]]);
+        }
+      });
+    } else {
+      // unchecking rewinds the steps after it
+      rank.forEach((r,key)=>{
+        if(r >= mine && STATE[key]){ delete STATE[key]; changed.push([key, null]); }
+      });
+    }
   }
   render();
   if(pushOne) changed.forEach(([k,v])=>pushOne(k,v)); else saveLocal();
@@ -695,16 +697,14 @@ if(cs) cs.onclick=()=>{
 /* fill each act's timeline rail up to the last completed step */
 function paintRails(){
   document.querySelectorAll('.flow').forEach(f=>{
-    const items=[...f.querySelectorAll('[data-id]')];
+    // the rail follows the sequential steps only — a split group finishing
+    // early shouldn't drag the gold past the whole block
+    const items=[...f.querySelectorAll('.step[data-id]')];
     const done=items.filter(e=>STATE[e.dataset.id]);
     if(!done.length){ f.style.setProperty('--fill','0px'); return; }
     const last=done[done.length-1];
     const fr=f.getBoundingClientRect(), lr=last.getBoundingClientRect();
-    // stop at the dot of the last done step, or the bottom of a finished split block
-    const anchor = last.classList.contains('card')
-      ? (last.closest('.grid')||last).getBoundingClientRect().bottom
-      : lr.top + 26;
-    const h = Math.max(0, Math.min(anchor - fr.top - 8, fr.height - 16));
+    const h = Math.max(0, Math.min(lr.top + 26 - fr.top - 8, fr.height - 16));
     f.style.setProperty('--fill', h+'px');
   });
 }
