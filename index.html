@@ -67,10 +67,10 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   .act h2{margin:0;font-size:20px;letter-spacing:.5px}
   .act .goal{margin-left:auto;font-size:13px;color:var(--dim);text-align:right;white-space:nowrap}
 
-  .flow{position:relative;padding-left:26px}
-  .flow:before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--line)}
+  .flow{position:relative;padding-left:54px}
+  .flow:before{content:"";position:absolute;left:21px;top:8px;bottom:8px;width:2px;background:var(--line)}
   /* gold fill that climbs the rail as the run progresses */
-  .flow:after{content:"";position:absolute;left:9px;top:8px;width:2px;
+  .flow:after{content:"";position:absolute;left:21px;top:8px;width:2px;
     height:var(--fill,0px);border-radius:2px;
     background:linear-gradient(180deg,#e8c987,var(--gold));
     box-shadow:0 0 9px rgba(216,181,106,.45);
@@ -78,16 +78,27 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
 
   .step{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;
     padding:13px 16px;margin:12px 0;transition:opacity .18s, filter .18s}
-  .step:before{content:"";position:absolute;left:-22px;top:20px;width:11px;height:11px;border-radius:50%;
+  .step:before{content:"";position:absolute;left:-38px;top:20px;width:11px;height:11px;border-radius:50%;
     background:var(--panel2);border:2px solid var(--line)}
   .step.me:before{border-color:var(--gold)}
   .step.done:before{background:var(--gold);border-color:var(--gold);
     box-shadow:0 0 0 4px rgba(216,181,106,.15), 0 0 10px rgba(216,181,106,.5)}
   .step.dimmed{opacity:.24;filter:saturate(.2)}
   .step.milestone{border-color:#4a3a20;background:linear-gradient(180deg,#1d1a16,var(--panel))}
-  .step.milestone > h4:before{content:"CHECKPOINT";font-size:10px;letter-spacing:1.4px;
-    color:var(--gold);background:#221a12;border:1px solid #4a3a20;border-radius:6px;
-    padding:2px 8px;white-space:nowrap;flex:0 0 auto}
+  /* the checkbox lives out in the gutter so all eight line up in one column */
+  .step.milestone:before{display:none}
+  .step.milestone .chk{position:absolute;left:-52px;top:11px;width:40px;height:40px;
+    border-radius:12px;font-size:24px;border-width:2px;border-color:#7a613a;background:#15161f;
+    box-shadow:0 0 0 5px rgba(216,181,106,.08), 0 2px 8px rgba(0,0,0,.4)}
+  .step.milestone .chk:hover{border-color:var(--gold);background:#1d1a16}
+  .step.milestone.done .chk{background:#2f9e5f;border-color:#3fbb74;
+    box-shadow:0 0 0 5px rgba(47,158,95,.2), 0 2px 10px rgba(47,158,95,.35)}
+  @media (max-width:480px){
+    .flow{padding-left:46px}
+    .flow:before,.flow:after{left:17px}
+    .step:before{left:-34px}
+    .step.milestone .chk{left:-46px;top:12px;width:36px;height:36px;font-size:21px}
+  }
   .step h4{margin:0 0 6px;font-size:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   .step p{margin:4px 0 0;font-size:14.5px;color:#d3d6de}
   .step p.small{font-size:13px;color:var(--dim)}
@@ -121,7 +132,6 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   .endblock ul{margin:0;padding-left:20px}
   .endblock li{margin:5px 0;font-size:14.5px}
   .warn{color:var(--gold);font-weight:600}
-
 
   /* ---------- progress + identity ---------- */
   .idbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px;
@@ -157,13 +167,11 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   .byline{font-size:11.5px;color:#8fe0a0;font-weight:600;white-space:nowrap;letter-spacing:.3px}
   .card .byline{display:block;margin-top:8px}
 
-
   .nav{display:flex;justify-content:center;gap:8px;margin:14px 0 0}
   .nav a{font-size:13.5px;color:var(--dim);text-decoration:none;border:1px solid var(--line);
     border-radius:999px;padding:7px 16px;transition:.15s}
   .nav a:hover{color:var(--txt);border-color:var(--gold)}
   .nav a.on{color:#0e0f13;background:var(--gold);border-color:var(--gold);font-weight:700}
-
 
   /* ---------- timing ---------- */
   .clock{font-size:13px;color:var(--gold);border:1px solid #4a3a20;background:#221a12;
@@ -187,6 +195,87 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     border-radius:10px;padding:10px;font-family:ui-monospace,Menlo,monospace;font-size:12px;
     display:none;margin-top:10px}
 
+  /* ---------- embedded build rail ---------- */
+  #rail{display:none;margin:18px 0 22px}
+  #rail.show{display:block}
+  #rail .rhead{display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap}
+  #rail .rhead .t{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--dim);
+    font-weight:700}
+  #rail .sheet{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--panel)}
+  #rail .br{display:flex;align-items:center;gap:11px;padding:9px 13px;border-top:1px solid var(--line);
+    font-size:14px}
+  #rail .br:first-child{border-top:0}
+  #rail .br .lv{font-variant-numeric:tabular-nums;font-weight:700;color:var(--dim);font-size:12.5px;
+    min-width:52px;flex:0 0 auto}
+  #rail .br .ic{width:22px;height:22px;flex:0 0 auto}
+  #rail .br .ic svg{width:22px;height:22px;display:block}
+  #rail .br .sk{font-weight:600}
+  #rail .br .nt{color:var(--dim);font-weight:400;font-size:12.5px}
+  #rail .br.key{background:#1d1a16}
+  #rail .br.key .lv{color:var(--gold)}
+  #rail .br.key .sk{color:var(--gold);font-weight:800}
+  #rail .brsp{background:linear-gradient(180deg,#2a1520,#1b1620);
+    border-top:1px solid #5a2a3a;border-bottom:1px solid #5a2a3a;padding:11px 13px}
+  #rail .brsp .t2{color:#f172b0;font-weight:800;font-size:13.5px}
+  #rail .brsp ul{margin:6px 0 0;padding-left:16px}
+  #rail .brsp li{font-size:12.5px;color:#d3d6de;margin:2px 0}
+  #rail .foot{font-size:12px;color:var(--dim);margin-top:8px}
+  #rail .foot b{color:var(--gold)}
+
+  @media (min-width:1400px){
+    #rail.show{position:fixed;top:14px;width:306px;z-index:6;margin:0;
+      right:max(14px, calc((100vw - 760px)/2 - 322px));
+      max-height:calc(100vh - 28px);overflow-y:auto;
+      padding-right:4px}
+    .wrap{max-width:760px}
+  }
+
+  /* scrollbar, dressed to match */
+  #rail{scrollbar-width:thin;scrollbar-color:#5a4526 transparent}
+  #rail::-webkit-scrollbar{width:11px}
+  #rail::-webkit-scrollbar-track{background:transparent;border-radius:999px}
+  #rail::-webkit-scrollbar-thumb{border-radius:999px;border:3px solid var(--bg);
+    background:linear-gradient(180deg,#6b5430,#3d3120);background-clip:padding-box}
+  #rail::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--gold),#8a6c33);
+    background-clip:padding-box}
+  #rail::-webkit-scrollbar-thumb:active{background:var(--gold);background-clip:padding-box}
+  .scroll{scrollbar-width:thin;scrollbar-color:#5a4526 transparent}
+  .scroll::-webkit-scrollbar{height:11px}
+  .scroll::-webkit-scrollbar-track{background:transparent}
+  .scroll::-webkit-scrollbar-thumb{border-radius:999px;border:3px solid var(--bg);
+    background:linear-gradient(90deg,#6b5430,#3d3120);background-clip:padding-box}
+  .scroll::-webkit-scrollbar-thumb:hover{background:var(--gold);background-clip:padding-box}
+
+  /* ---------- slim top bar ---------- */
+  .topbar{margin:16px 0 20px}
+  .topmeta{display:flex;align-items:center;gap:12px;margin-top:7px;font-size:12.5px;color:var(--dim)}
+  .topmeta .clock{border:0;background:none;padding:0;height:auto;font-weight:600;color:var(--gold)}
+  .topmeta .clock.idle{color:var(--dim);font-weight:400}
+  .topmeta .clear{height:26px;font-size:12px;padding:0 12px;margin-left:auto;border-style:solid}
+  .dotstat{width:7px;height:7px;border-radius:50%;background:var(--dim);flex:0 0 auto}
+  .dotstat.live{background:#4ad991}
+  .dotstat.error{background:#e0645a}
+
+  /* ---------- one character picker, in the rail ---------- */
+  #rail{display:block}
+  .pickwrap{margin-bottom:10px}
+  .pickwrap label{display:block;font-size:10.5px;letter-spacing:1.8px;text-transform:uppercase;
+    color:var(--dim);font-weight:700;margin-bottom:6px}
+  #pick{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    border-radius:10px;padding:11px 12px;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  #pick:hover{border-color:var(--gold)}
+
+
+  /* ---------- the things people forget ---------- */
+  .dont{display:flex;gap:10px;align-items:flex-start;margin:10px 0 0;
+    background:linear-gradient(180deg,#2a1614,#1c1519);border:1px solid #7a3a30;
+    border-left:4px solid #e0645a;border-radius:9px;padding:9px 12px}
+  .dont .lbl{font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:#ff9b8f;
+    font-weight:800;white-space:nowrap;padding-top:2px;flex:0 0 auto}
+  .dont .txt{font-size:14px;color:#ffd9d2;font-weight:600;line-height:1.4}
+  .step.hasdont{border-color:#5e3129}
+  @media (max-width:520px){ .dont{flex-direction:column;gap:3px} }
+
   .quickref{margin:26px 0}
   .quickref h3{font-size:15px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
   table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
@@ -205,7 +294,6 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
 
 <header>
   <h1>Season 15 Ladder Reset — NORMAL</h1>
-  <div class="sub">Dewablo Strat, adapted for our 8-man · Start → Baal → Cows → lvl 25+</div>
   <div class="nav">
     <a class="on" href="index.html">Normal</a>
     <a href="nightmare.html">Nightmare &amp; Hell</a>
@@ -213,23 +301,17 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   </div>
 </header>
 
-<div class="rosterbox">
-  <h2>Tap your name to highlight only your steps</h2>
-  <p class="hint">Tapping a name dims everything that isn't your job. Tap again (or "Show everyone") to see the whole plan.</p>
-  <div class="chips" id="chips"></div>
-  <div class="idbar">
-    <label for="me">Checking things off as:</label>
-    <select id="me"><option value="">— pick your name —</option></select>
-    <span class="status local" id="status">checking…</span>
-    <span class="clock idle" id="clock">⏱ not started</span>
-    <button class="clear" id="resetAll">Reset run</button>
-  </div>
+<div class="topbar">
   <div class="bar"><i id="barFill"></i></div>
-  <div class="bartxt" id="barTxt">0 of 0 done</div>
-  <p class="hint" style="margin:10px 0 0">Only the <b>checkpoints</b> are tickable — eight per run, roughly
-  one per act, so it's a couple of taps while you play rather than a second job. Ticking one marks the
-  earlier checkpoints done and stamps the clock.</p>
+  <div class="topmeta">
+    <span id="barTxt">0 of 8</span>
+    <span class="clock idle" id="clock">not started</span>
+    <span class="dotstat" id="status" title="checking"></span>
+    <button class="clear" id="resetAll">reset</button>
+  </div>
 </div>
+
+<aside id="rail"></aside>
 
 <div class="notes">
   <h3>Rules for the whole run</h3>
@@ -245,45 +327,49 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
 <div class="act"><span class="num">ACT 1</span><h2>Den → Tristram → Countess split → Andariel</h2><div class="goal">Target: lvl 12–14 by Andy</div></div>
 <div class="flow" id="act1">
 
-  <div class="step" data-id="act1--stony-field-tp" data-who="taxi druid">
+  <div class="step hasdont" data-id="act1--stony-field-tp" data-who="taxi druid">
     <h4><span class="tag tp">Scout</span> Stony Field TP</h4>
     <div class="duo" data-names="taxi druid"></div>
-    <p><b>Zinski (Sorc)</b> and <b>Creamsicles (Druid)</b> run straight for Stony Field and leave a TP there.</p>
+    <p>Run straight to Stony Field.</p>
+    <div class="dont"><span class="lbl">Don't forget</span><span class="txt">Leave the TP standing — the group jumps to it the moment Den is done.</span></div>
   </div>
 
   <div class="step" data-id="act1--clear-the-den-of-evil" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag">Quest</span> Clear the Den of Evil</h4>
-    <p>Everyone else (<b>Bonk, XiLeD88, Augural, Not Pavico, Fkityolo, bArracooN</b>) clears Den. Take the skill point.</p>
+    <p>Everyone else clears Den. Take the skill point.</p>
   </div>
 
   <div class="step" data-id="act1--bonk-portals-the-group-to-stones" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag tp">TP</span> Bonk portals the group to Stones</h4>
-    <p>As soon as Den is done, <b>Bonk (Barb)</b> drops the TP so the group jumps to Stony Field.</p>
+    <p>As soon as Den is done, <b>Bonk</b> drops a TP so the group jumps to Stony Field.</p>
   </div>
 
-  <div class="step" data-id="act1--stony-field-underground-passage" data-who="barb pally warlock sin zon tele">
+  <div class="step hasdont" data-id="act1--stony-field-underground-passage" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag">Clear</span> Stony Field + Underground Passage</h4>
-    <p>Group clears Stones and runs Underground Passage. <b>Leave a TP at Stones.</b></p>
+    <p>Clear Stones, run Underground Passage.</p>
+    <div class="dont"><span class="lbl">Don't forget</span><span class="txt">Leave a TP at Stones before you move on.</span></div>
   </div>
 
-  <div class="step" data-id="act1--find-black-marsh-then-push-toward-andy" data-who="taxi druid">
+  <div class="step hasdont" data-id="act1--find-black-marsh-then-push-toward-andy" data-who="taxi druid">
     <h4><span class="tag tp">Scout</span> Find Black Marsh, then push toward Andy</h4>
-    <p><b>Zinski + Creamsicles</b> keep running together to find <b>Black Marsh</b>, drop a TP at the WP, then continue pathing toward the Monastery / Andariel.</p>
+    <p><b>Zinski + Creamsicles</b> find <b>Black Marsh</b>, then keep pathing toward the Monastery.</p>
+    <div class="dont"><span class="lbl">Don't forget</span><span class="txt">Drop the TP at the Black Marsh WP. All eight need that waypoint.</span></div>
   </div>
 
   <div class="step" data-id="act1--find-the-tree-of-inifuss" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag">Quest</span> Find the Tree of Inifuss</h4>
-    <p>The other six hunt down the Tree. Once found → back to town, turn in the scroll, <b>make Tristram</b>.</p>
+    <p>The other six find the Tree, turn in the scroll, then <b>make Tristram</b>.</p>
   </div>
 
-  <div class="step milestone" data-id="act1--run-tristram-bonk-keeps-the-leg" data-who="barb pally warlock sin zon tele">
+  <div class="step hasdont milestone" data-id="act1--run-tristram-bonk-keeps-the-leg" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag loot">Loot</span> Run Tristram — Bonk KEEPS the Leg</h4>
-    <p>Everyone <b>except Zinski and Creamsicles</b> runs Trist together. <b class="warn">Bonk holds Wirt's Leg all the way to Cows — do not sell it, do not drop it.</b></p>
+    <p>Everyone <b>except Zinski and Creamsicles</b> runs Trist.</p>
+    <div class="dont"><span class="lbl">Don't forget</span><span class="txt">Bonk keeps Wirt's Leg. Don't sell it, don't drop it — it opens Cows.</span></div>
   </div>
 
   <div class="step" data-id="act1--everyone-grabs-the-black-marsh-wp" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag">Travel</span> Everyone grabs the Black Marsh WP</h4>
-    <p>Take the WP Zinski + Creamsicles opened. Now we split.</p>
+    <p>Take the WP Zinski and Creamsicles opened, then split.</p>
   </div>
 
   <div class="splitbanner">⚔&nbsp;THIS IS WHERE THE GROUP&nbsp;SPLITS&nbsp;⚔</div>
@@ -291,28 +377,28 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     <div class="card" data-id="act1--1-rush-to-andy" data-who="tele druid">
       <div class="ttl">1 · Rush to Andy</div>
       <div class="duo" data-names="tele druid"></div>
-      <p>Path Black Marsh → Tamoe → Monastery → Catacombs. Drop TPs at champ packs. Call out when you hit <b>Outer Cloister</b> and again at <b>Cata 3</b>.</p>
+      <p>Black Marsh → Tamoe → Monastery → Catacombs, dropping TPs at champ packs. Call out at <b>Outer Cloister</b> and again at <b>Cata 3</b>.</p>
     </div>
     <div class="card" data-id="act1--2-main-game-countess" data-who="taxi warlock">
       <div class="ttl">2 · Main-Game Countess</div>
       <div class="duo" data-names="taxi warlock"></div>
-      <p>Run Countess in the main game. When bArracooN calls "Outer Cloister," you two can make a <b>new game</b> and run a second Countess.</p>
+      <p>Countess in the main game. On the <b>Outer Cloister</b> call, make a new game and run a second.</p>
     </div>
     <div class="card" data-id="act1--3-duo-countess" data-who="zon pally">
       <div class="ttl">3 · Duo Countess</div>
       <div class="duo" data-names="zon pally"></div>
-      <p>Make your own game, run Countess on repeat. Hunting Tal / Ral / Ort / Thul for Spirits + Insight.</p>
+      <p>Own game, Countess on repeat. Hunting Tal / Ral / Ort / Thul.</p>
     </div>
     <div class="card" data-id="act1--4-duo-countess" data-who="sin barb">
       <div class="ttl">4 · Duo Countess</div>
       <div class="duo" data-names="sin barb"></div>
-      <p>Make your own game, run Countess on repeat. <b>Bonk still has the Leg.</b></p>
+      <p>Own game, Countess on repeat. <b>Bonk still has the Leg.</b></p>
     </div>
   </div>
 
   <div class="step milestone" data-id="act1--regroup-andariel" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag boss">Boss</span> Regroup → Andariel</h4>
-    <p>When <b>bArracooN + Creamsicles</b> reach <b>Catacombs 3</b>, everyone finishes their current Countess run and rejoins the main game. Full 8-man kills Andy.</p>
+    <p>On the <b>Cata 3</b> call, finish your run and rejoin the main game. All 8 kill Andy.</p>
   </div>
 </div>
 
@@ -320,9 +406,10 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
 <div class="act"><span class="num">ACT 2</span><h2>Sewers · Halls · Viper · Summoner · Duriel</h2><div class="goal">Target: lvl 18–20 by Duriel</div></div>
 <div class="flow" id="act2">
 
-  <div class="step" data-id="act2--bonk-leaps-the-sewers" data-who="barb">
+  <div class="step hasdont" data-id="act2--bonk-leaps-the-sewers" data-who="barb">
     <h4><span class="tag tp">Solo</span> Bonk leaps the Sewers</h4>
-    <p><b>Bonk (Barb)</b> uses Leap to blast through the Sewers, <b>drops a TP at Radament</b>, then joins the Halls team.</p>
+    <p>Leap through the Sewers, then join the Halls team.</p>
+    <div class="dont"><span class="lbl">Don't forget</span><span class="txt">Drop a TP at Radament on your way through, or the Halls team can't reach him.</span></div>
   </div>
 
   <div class="splitbanner">TWO TEAMS</div>
@@ -330,33 +417,36 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     <div class="card" data-id="act2--viper-team" data-who="tele warlock">
       <div class="ttl">Viper Team</div>
       <div class="duo" data-names="tele warlock"></div>
-      <p>Run <b>Dry Hills → Far Oasis → Viper Temple</b>. Drop a TP at <b>Maggot Lair</b> so bArracooN can tele from there at lvl 18. Start clearing Viper.</p>
+      <p><b>Dry Hills → Far Oasis → Viper Temple.</b> Start clearing Viper when you get there.</p>
+    <div class="dont"><span class="lbl">Don't forget</span><span class="txt">Drop a TP at Maggot Lair. bArracooN teleports from it the second he hits 18 — without it he walks.</span></div>
     </div>
     <div class="card" data-id="act2--halls-team" data-who="zon pally taxi druid sin barb">
       <div class="ttl">Halls Team</div>
       <div class="duo" data-names="zon pally taxi druid sin barb"></div>
-      <p>Run to <b>Halls of the Dead</b> and clear it. <b class="warn">Bring the extra Horadric Cubes back to town</b> — everyone needs one.</p>
+      <p>Clear <b>Halls of the Dead</b>.</p>
+    <div class="dont"><span class="lbl">Don't forget</span><span class="txt">Carry the spare Horadric Cubes back to town. Everyone needs one.</span></div>
     </div>
   </div>
 
-  <div class="step milestone" data-id="act2--clear-radament" data-who="zon pally taxi druid sin barb">
+  <div class="step hasdont milestone" data-id="act2--clear-radament" data-who="zon pally taxi druid sin barb">
     <h4><span class="tag loot">Loot</span> Clear Radament</h4>
-    <p>Halls team clears Rada next. <b class="warn">Grab the extra skill books and bring them to town</b> so everyone gets a point.</p>
+    <p>Halls team clears Rada.</p>
+    <div class="dont"><span class="lbl">Don't forget</span><span class="txt">Carry the spare skill books to town — that's a free point for each of you.</span></div>
   </div>
 
   <div class="step" data-id="act2--viper-temple-if-not-done" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag all">All 8</span> Viper Temple (if not done)</h4>
-    <p>If Viper isn't cleared by the time Halls + Rada are finished, <b>everyone</b> joins bArracooN and Augural for the Amulet pop.</p>
+    <p>If Viper isn't done when Halls and Rada are, everyone joins for the Amulet pop.</p>
   </div>
 
   <div class="step" data-id="act2--summoner-and-shop" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag all">All 8</span> Summoner — and shop</h4>
-    <p>Everyone runs Summoner together. <b>This is the shopping window</b> — res / life / mana gear, especially for the two Sorcs. Be quick.</p>
+    <p>Summoner together. <b>Shopping window</b> — res / life / mana, especially for the two Sorcs. Be quick.</p>
   </div>
 
   <div class="step milestone" data-id="act2--clear-the-main-tomb-duriel" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag boss">Boss</span> Clear the main Tomb → Duriel</h4>
-    <p>Clear the true tomb on the way through, then all 8 kill Duriel.</p>
+    <p>Clear the true tomb on the way, then all 8 kill Duriel.</p>
   </div>
 </div>
 
@@ -366,7 +456,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
 
   <div class="step" data-id="act3--anyone-under-lvl-20-runs-tombs" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag">Gate</span> Anyone under lvl 20 runs Tombs</h4>
-    <p>If you're not <b>lvl 20</b>, run Tombs until you are. Take a killer with you — <b>Augural (Warlock)</b> or <b>Not Pavico (Sin)</b>. Once 20, join the main game and help with organs.</p>
+    <p>Under <b>20</b>? Run Tombs until you're there, with <b>Augural</b> or <b>Not Pavico</b> to kill. Then join the main game for organs.</p>
   </div>
 
   <div class="splitbanner">TWO TELEPORTERS OUT FRONT</div>
@@ -374,23 +464,23 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     <div class="card" data-id="act3--path-to-travincal" data-who="tele">
       <div class="ttl">Path to Travincal</div>
       <div class="duo" data-names="tele"></div>
-      <p>Teleport toward Travincal, <b>dropping TPs at every champ pack</b> for the group to hop.</p>
+      <p>Teleport toward Trav, <b>dropping TPs at every champ pack</b>.</p>
     </div>
     <div class="card" data-id="act3--organ-run" data-who="taxi">
       <div class="ttl">Organ Run</div>
       <div class="duo" data-names="taxi"></div>
-      <p>Teleport for the <b>organs</b> (Eye, Heart, Brain), also dropping TPs at champ packs.</p>
+      <p>Teleport for the <b>organs</b>, also dropping TPs at champ packs.</p>
     </div>
     <div class="card" data-id="act3--everyone-else" data-who="barb pally warlock sin zon druid">
       <div class="ttl">Everyone Else</div>
       <div class="duo" data-names="barb pally warlock sin zon druid"></div>
-      <p><b>TP hop</b> between the portals the Sorcs drop and clear the packs. Free XP, no walking.</p>
+      <p><b>TP hop</b> the Sorcs' portals and clear the packs.</p>
     </div>
   </div>
 
   <div class="step milestone" data-id="act3--travincal" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag all">All 8</span> Travincal</h4>
-    <p>Everyone runs Trav together. Then <b>bArracooN teleports to Mephisto</b> and the group follows for the kill.</p>
+    <p>All 8 run Trav. Then <b>bArracooN teleports to Meph</b> and the group follows.</p>
   </div>
 </div>
 
@@ -400,17 +490,17 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
 
   <div class="step" data-id="act4--barracoon-teleports-to-izual" data-who="tele">
     <h4><span class="tag tp">Rush</span> bArracooN teleports to Izual</h4>
-    <p>Drop a TP on Izual, then keep going to the <b>River of Flame WP</b>.</p>
+    <p>Drop a TP on Izual, then continue to the <b>River of Flame WP</b>.</p>
   </div>
 
   <div class="step" data-id="act4--everyone-else-kills-izual" data-who="barb pally warlock sin zon taxi druid">
     <h4><span class="tag boss">Boss</span> Everyone else kills Izual</h4>
-    <p>Take the TP, kill Izzy, <b>take the +2 skill points</b>.</p>
+    <p>Take the TP, kill him, <b>take the +2 skill points</b>.</p>
   </div>
 
   <div class="step milestone" data-id="act4--full-chaos-sanctuary-clear-diablo" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag all">All 8</span> Full Chaos Sanctuary clear → Diablo</h4>
-    <p>bArracooN drops a TP at the entrance to Chaos. <b>We run all of Chaos</b> — every seal, every pack — then Diablo.</p>
+    <p>TP at the Chaos entrance. <b>Run all of it</b> — every seal, every pack — then Diablo.</p>
   </div>
 </div>
 
@@ -420,12 +510,12 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
 
   <div class="step" data-id="act5--shenk-wp-tp-then-keep-moving" data-who="tele">
     <h4><span class="tag tp">Rush</span> Shenk WP TP, then keep moving</h4>
-    <p><b>bArracooN</b> heads to Shenk's WP, drops a TP, and immediately keeps teleporting onward.</p>
+    <p>Drop a TP at Shenk's WP and keep teleporting onward.</p>
   </div>
 
   <div class="step milestone" data-id="act5--everyone-else-kills-shenk" data-who="barb pally warlock sin zon taxi druid">
     <h4><span class="tag">Clear</span> Everyone else kills Shenk</h4>
-    <p>Take the WP + TP and clear Shenk and the surrounding packs.</p>
+    <p>Take the WP and clear Shenk and the packs around him.</p>
   </div>
 
   <div class="splitbanner">RESCUE THE BARBARIANS</div>
@@ -433,23 +523,23 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     <div class="card" data-id="act5--finds-the-barbs" data-who="taxi">
       <div class="ttl">Finds the Barbs</div>
       <div class="duo" data-names="taxi"></div>
-      <p><b>Zinski</b> runs / teles Frigid Highlands to locate the Barbarian cages and drops TPs.</p>
+      <p>Tele Frigid Highlands, find the Barb cages, drop TPs.</p>
     </div>
     <div class="card" data-id="act5--everyone-else" data-who="barb pally warlock sin zon druid">
       <div class="ttl">Everyone Else</div>
       <div class="duo" data-names="barb pally warlock sin zon druid"></div>
-      <p><b>TP hop</b> to Zinski's portals and clear out the Barb rescue.</p>
+      <p><b>TP hop</b> Zinski's portals and clear the rescue.</p>
     </div>
   </div>
 
   <div class="step" data-id="act5--anya" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag">Quest</span> Anya</h4>
-    <p>bArracooN drops a TP at the <b>Anya entrance</b> so Zinski can teleport straight to her; everyone else clears in. <b>Take the +1 all res scroll.</b></p>
+    <p>TP at the <b>Anya entrance</b> for Zinski; everyone else clears in. <b>Take the res scroll.</b></p>
   </div>
 
   <div class="step milestone" data-id="act5--ancients-throne-room-baal" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag boss">Boss</span> Ancients → Throne Room → Baal</h4>
-    <p>bArracooN continues to Ancients, we all do the fight, then he teles through Worldstone to the Throne. <b>All 8 for Baal.</b></p>
+    <p>bArracooN continues to Ancients, all 8 do the fight, then he teles to the Throne. <b>All 8 for Baal.</b></p>
   </div>
 </div>
 
@@ -464,26 +554,6 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   </ul>
 </div>
 
-<div class="quickref">
-  <h3>Quick reference — who does what in Normal</h3>
-  <div class="scroll">
-  <table id="qr">
-    <thead><tr><th>Player</th><th>Act 1</th><th>Act 2</th><th>Act 3–5</th></tr></thead>
-    <tbody>
-      <tr data-who="tele"><td data-names="tele"></td><td>Den → Tree → Trist. Then <b>rush Andy with Creamsicles</b></td><td>Dry Hills → Viper with Augural. <b>Tele at lvl 18</b></td><td>Lead teleporter: Trav, Meph, Izzy, Chaos, Shenk, Anya, Ancients, Baal. Drop TPs at champ packs</td></tr>
-      <tr data-who="taxi"><td data-names="taxi"></td><td>Stones TP + Black Marsh with Creamsicles → <b>Countess with Augural</b></td><td>Halls team + Radament</td><td>Organ teleporter (lvl 20+), Barb rescue in A5, Anya tele</td></tr>
-      <tr data-who="barb"><td data-names="barb"></td><td>Den, Stones TP, Tree, Trist — <b>KEEPS THE LEG</b> → duo Countess with Not Pavico</td><td><b>Leap Sewers</b>, TP at Rada, join Halls</td><td>TP hop + clear with the group. Opens Cows at the end</td></tr>
-      <tr data-who="pally"><td data-names="pally"></td><td>Den, Stones, Tree, Trist → <b>duo Countess with Fkityolo</b></td><td>Halls team + Radament</td><td>Tombs to 20 if needed, then TP hop and clear with group</td></tr>
-      <tr data-who="warlock"><td data-names="warlock"></td><td>Den, Stones, Tree, Trist → <b>Countess in main game with Zinski</b></td><td><b>Viper team</b> with bArracooN</td><td>Main killer for underleveled players in Tombs, then group clear</td></tr>
-      <tr data-who="sin"><td data-names="sin"></td><td>Den, Stones, Tree, Trist → <b>duo Countess with Bonk</b></td><td>Halls team + Radament</td><td>Tombs support / group clear, TP hop</td></tr>
-      <tr data-who="zon"><td data-names="zon"></td><td>Den, Stones, Tree, Trist → <b>duo Countess with XiLeD88</b></td><td>Halls team + Radament</td><td>Tombs to 20 if needed, then TP hop and clear with group</td></tr>
-      <tr data-who="druid"><td data-names="druid"></td><td>Stones TP + Black Marsh with Zinski → <b>rush Andy with bArracooN</b></td><td>Halls team + Radament</td><td>Group clear, TP hop, Oak Sage up for the team</td></tr>
-    </tbody>
-  </table>
-  </div>
-</div>
-
-
 <div class="splits">
   <h3>Run splits
     <span class="tools">
@@ -495,7 +565,6 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   <textarea id="dump" readonly></textarea>
 </div>
 
-<footer>Adapted from the Dewablo Strat S15 doc for our 8-man. Normal difficulty only.</footer>
 </div>
 
 <script>
@@ -519,21 +588,6 @@ function pill(k){
          '<span style="color:var(--dim);font-weight:400"> · '+p.role+'</span></span>';
 }
 
-// build roster chips
-const chips = document.getElementById('chips');
-ROSTER.forEach(p=>{
-  const b = document.createElement('button');
-  b.className='chip'; b.dataset.k=p.k;
-  b.innerHTML='<span class="dot" style="background:'+p.c+'"></span>'+
-              '<b style="color:'+p.c+'">'+p.name+'</b> <span class="role">'+p.role+'</span>';
-  b.onclick=()=>select(p.k);
-  chips.appendChild(b);
-});
-const clr = document.createElement('button');
-clr.className='clear'; clr.textContent='Show everyone';
-clr.onclick=()=>select(null);
-chips.appendChild(clr);
-
 // fill duo name lists
 document.querySelectorAll('[data-names]').forEach(el=>{
   el.innerHTML = el.dataset.names.trim().split(/\s+/).map(pill).join(' ');
@@ -553,7 +607,6 @@ document.querySelectorAll('[data-names]').forEach(el=>{
   });
 })();
 
-
 /* ============================================================
    SHARED PROGRESS
    ============================================================ */
@@ -562,14 +615,6 @@ const LS = { get(k){try{return localStorage.getItem(k)}catch(e){return null}},
 let ME = '';   // always start unselected so nobody ticks as the wrong person
 let STATE = {};
 let pushOne = null, pushClear = null, pushMeta = null;
-
-const sel = document.getElementById('me');
-ROSTER.forEach(p=>{
-  const o=document.createElement('option');
-  o.value=p.name; o.textContent=p.name+' · '+p.role; sel.appendChild(o);
-});
-sel.value = '';
-sel.onchange = ()=>{ ME = sel.value; };
 
 function mkChk(id){
   const b=document.createElement('button');
@@ -611,9 +656,9 @@ function rankMap(){
 
 function toggle(id){
   if(!ME){
-    sel.focus();
-    sel.style.borderColor='var(--gold)';
-    setTimeout(()=>sel.style.borderColor='',1200);
+    const el=document.getElementById('pick');
+    if(el){ el.scrollIntoView({block:'center'}); el.style.borderColor='var(--gold)';
+            setTimeout(()=>el.style.borderColor='',1400); }
     return;
   }
   const turningOn = !STATE[id];
@@ -654,7 +699,6 @@ function saveLocal(){
   LS.set('d2r-meta-'+window.RUN_KEY,  JSON.stringify(META));
 }
 
-
 /* ============================================================
    RUN TIMER
    ============================================================ */
@@ -686,12 +730,12 @@ function orderedDone(){
 function renderClock(){
   const el=document.getElementById('clock');
   if(!el) return;
-  if(!META.startedAt){ el.className='clock idle'; el.textContent='⏱ not started'; return; }
+  if(!META.startedAt){ el.className='clock idle'; el.textContent='not started'; return; }
   const done = orderedDone();
   const all  = document.querySelectorAll('[data-id]').length;
   const end  = done.length===all && done.length ? STATE[done[done.length-1]].at : Date.now();
   el.className='clock';
-  el.textContent = '⏱ ' + fmt(end - META.startedAt) + (done.length===all && all ? ' · finished' : '');
+  el.textContent = fmt(end - META.startedAt) + (done.length===all && all ? ' · finished' : '');
 }
 setInterval(renderClock, 1000);
 
@@ -700,9 +744,9 @@ function renderSplits(){
   if(!wrap) return;
   const done=orderedDone();
   if(!done.length || !META.startedAt){
-    wrap.innerHTML='<div class="empty">No splits yet — the clock starts on the first box ticked.</div>';
-    return;
+    document.querySelector('.splits').style.display='none'; wrap.innerHTML=''; return;
   }
+  document.querySelector('.splits').style.display='';
   let prev=META.startedAt, rows='';
   done.forEach((id,i)=>{
     const at=STATE[id].at;
@@ -743,7 +787,6 @@ if(cs) cs.onclick=()=>{
   a.download=window.RUN_KEY+'-splits.csv'; a.click();
 };
 
-
 /* fill each act's timeline rail up to the last completed step */
 function paintRails(){
   document.querySelectorAll('.flow').forEach(f=>{
@@ -777,7 +820,7 @@ function render(){
   const done=all.filter(e=>STATE[e.dataset.id]).length;
   const pct= all.length? Math.round(done/all.length*100):0;
   document.getElementById('barFill').style.width=pct+'%';
-  document.getElementById('barTxt').textContent=done+' of '+all.length+' checkpoints · '+pct+'%';
+  document.getElementById('barTxt').textContent=done+' of '+all.length+' checkpoints';
   renderClock(); renderSplits(); paintRails();
   document.querySelectorAll('.actprog').forEach(sp=>{
     const f=document.getElementById(sp.dataset.for);
@@ -793,23 +836,21 @@ const rst=document.getElementById('resetAll');
 let armed=false, armTimer=null;
 rst.onclick=()=>{
   if(!armed){
-    armed=true; rst.textContent='Click again to wipe'; rst.style.color='#f0a0a0';
+    armed=true; rst.textContent='sure?'; rst.style.color='#f0a0a0';
     rst.style.borderColor='#4a2020';
-    armTimer=setTimeout(()=>{armed=false;rst.textContent='Reset run';rst.style.color='';rst.style.borderColor='';},4000);
+    armTimer=setTimeout(()=>{armed=false;rst.textContent='reset';rst.style.color='';rst.style.borderColor='';},4000);
     return;
   }
-  clearTimeout(armTimer); armed=false; rst.textContent='Reset run'; rst.style.color=''; rst.style.borderColor='';
+  clearTimeout(armTimer); armed=false; rst.textContent='reset'; rst.style.color=''; rst.style.borderColor='';
   STATE={}; META={}; render();
   if(pushClear) pushClear(); else saveLocal();
 };
 
 function setStatus(kind,msg){
   const el=document.getElementById('status');
-  el.className='status '+kind;
-  el.textContent = kind==='live' ? '● synced with team'
-                 : kind==='local' ? '○ local only — not shared'
-                 : '● sync error';
-  if(msg) el.title=msg;
+  el.className='dotstat '+kind;
+  el.title = kind==='live' ? 'synced with the team'
+           : kind==='error' ? 'sync error' : 'local only';
 }
 
 window.APP = {
@@ -823,10 +864,220 @@ try{ STATE = JSON.parse(LS.get('d2r-state-'+window.RUN_KEY)||'{}'); }catch(e){ S
 try{ META  = JSON.parse(LS.get('d2r-meta-'+window.RUN_KEY)||'{}');  }catch(e){ META={}; }
 render();
 
+const ICO = {
+ fire:'<svg viewBox="0 0 24 24" fill="none" stroke="#ef8b4b" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3c1 4-3 5-3 8a3 3 0 006 0c0-1-.4-2-1-2.6 2.4 1 4 3.3 4 6A6 6 0 116.6 9 10 10 0 0012 3z"/></svg>',
+ cold:'<svg viewBox="0 0 24 24" fill="none" stroke="#38cfe0" stroke-width="1.9" stroke-linecap="round"><path d="M12 2v20M4 6l16 12M20 6L4 18"/></svg>',
+ light:'<svg viewBox="0 0 24 24" fill="none" stroke="#f2d95c" stroke-width="1.9" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>',
+ pois:'<svg viewBox="0 0 24 24" fill="none" stroke="#9ecc3b" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3s6 6.4 6 10.4A6 6 0 016 13.4C6 9.4 12 3 12 3z"/></svg>',
+ phys:'<svg viewBox="0 0 24 24" fill="none" stroke="#c69a72" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 3l-9 9M14 6l4 4M4 20l4-1 9-9-3-3-9 9z"/></svg>',
+ bone:'<svg viewBox="0 0 24 24" fill="none" stroke="#b98af0" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3a7 7 0 00-4 12.7V19h8v-3.3A7 7 0 0012 3z"/><path d="M9.5 11h.01M14.5 11h.01"/></svg>',
+ aura:'<svg viewBox="0 0 24 24" fill="none" stroke="#f172b0" stroke-width="1.9"><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>',
+ sum:'<svg viewBox="0 0 24 24" fill="none" stroke="#8fbf5a" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3l7 4v6c0 4-3 6.5-7 8-4-1.5-7-4-7-8V7z"/></svg>',
+ util:'<svg viewBox="0 0 24 24" fill="none" stroke="#6b8cff" stroke-width="1.9" stroke-linejoin="round"><path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6z"/></svg>',
+ save:'<svg viewBox="0 0 24 24" fill="none" stroke="#d8b56a" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+ vit:'<svg viewBox="0 0 24 24" fill="none" stroke="#e0645a" stroke-width="1.9" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.3A3.9 3.9 0 0112 8a3.9 3.9 0 017 2.7c0 4.9-7 9.3-7 9.3z"/></svg>',
+ str:'<svg viewBox="0 0 24 24" fill="none" stroke="#c69a72" stroke-width="1.9" stroke-linecap="round"><path d="M4 9v6M20 9v6M7 7v10M17 7v10M7 12h10"/></svg>',
+ ene:'<svg viewBox="0 0 24 24" fill="none" stroke="#6b8cff" stroke-width="1.9" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>',
+ dex:'<svg viewBox="0 0 24 24" fill="none" stroke="#4ad991" stroke-width="1.9"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>'
+};
+const BUILDS = [
+{k:'tele',n:'bArracooN',r:'TeleSorc',c:'var(--tele)',src:'doc',
+ rows:[[1,1,'Frozen Armor','','cold'],
+       [2,5,'Save the point','bank it — do not spend','save'],
+       [6,6,'Static Field + Telekinesis + Frost Nova','one each, out of the bank','light'],
+       [7,11,'Static Field','','light'],
+       [12,12,'Nova','the free Radament point','light'],
+       [13,17,'Nova','','light'],
+       [18,18,'Teleport','this is the big one','util'],
+       [19,19,'Nova','','light'],
+       [20,20,'Nova ×2','Izual gives two — both here','light'],
+       [21,25,'Nova','respec at 26','light'],
+       [27,30,'Energy Shield','','util'],
+       [31,37,'Teleport','','util']],
+ stat:[['1st','Strength to 35','str'],['2nd','Energy to 60','ene'],['then','Vitality — every point after','vit']],
+ target:'Sheet should read about Str 50 · Dex 25 · Vit 105',
+ respec:{at:26,t:'Energy Shield / Teleport',
+  l:['Telekinesis 20','Static Field 6–7','Energy Shield 2','Teleport 1','Frozen Armor 1, Frost Nova 1','Charged Bolt, Lightning, Chain Lightning — 1 each']},
+ gear:['Res / life / mana on boots, gloves, belt','Spirit as soon as the runes land']},
+
+{k:'taxi',n:'Zinski',r:'Sorc',c:'var(--taxi)',src:'doc',
+ rows:[[1,1,'Frozen Armor','','cold'],
+       [2,5,'Save the point','bank it','save'],
+       [6,6,'Static Field + Telekinesis + Frost Nova','one each, out of the bank','light'],
+       [7,11,'Static Field','','light'],
+       [12,12,'Nova','free Radament point','light'],
+       [13,17,'Nova','','light'],
+       [18,18,'Teleport','take it the moment you hit 18','util'],
+       [19,19,'Nova','','light'],
+       [20,20,'Nova ×2','Izual points','light'],
+       [21,29,'Nova','respec at 30','light'],
+       [31,99,'Firewall + Fire Mastery','after the respec','fire']],
+ stat:[[1,99,'Vitality','vit']],
+ target:'By 26 — Str 35 · Dex 20 · Vit 75 · Ene 65',
+ respec:{at:30,t:'Firewall boss killer',
+  l:['Telekinesis 14','Static Field 7','Firewall 1+, Fire Mastery 1+','Warmth, Inferno, Blaze — 1 each','Teleport 1, Energy Shield 1']},
+ gear:['Res / life / mana boots, gloves, belt','Spirit when you can']},
+
+{k:'barb',n:'Bonk',r:'Barb',c:'var(--barb)',src:'doc',
+ rows:[[1,1,'Bash','','phys'],
+       [2,2,'Mace Mastery','','phys'],
+       [3,3,'Howl','','aura'],
+       [4,5,'Save the point','bank it','save'],
+       [6,6,'Taunt + Leap + Double Swing','one each, out of the bank','phys'],
+       [7,9,'Mace Mastery','','phys'],
+       [10,17,'Leap','this is your sewer trick in Act 2','phys'],
+       [18,18,'Leap Attack','','phys'],
+       [19,20,'Leap','','phys'],
+       [22,23,'Shout','Battle Orders unlocks at 24','aura'],
+       [24,43,'Battle Orders','every level until it caps at 43','aura']],
+ stat:[[1,99,'Vitality','vit']],
+ target:'Str 50 · Dex 20 · Vit 135 · Ene 35',
+ respec:{at:21,t:'Battle Orders',
+  l:['Shout 11','Battle Orders 1+ (unlocks at 24)','Battle Command 1 (at 30)','Leap 8','Howl 1, Taunt 1','Increased Stamina, Speed, Iron Skin — 1 each']},
+ gear:['You carry pots and TP tomes for both Sorcs','Hold Wirt\'s Leg until Cows']},
+
+{k:'pally',n:'XiLeD88',r:'Pally',c:'var(--pally)',src:'doc',
+ rows:[[1,1,'Sacrifice','','phys'],
+       [2,2,'Might','','aura'],
+       [3,3,'Smite','','phys'],
+       [4,5,'Save the point','bank it','save'],
+       [6,11,'Holy Bolt','your damage for all of Normal','util'],
+       [12,12,'Charge + Resist Lightning','Radament covers the second','aura'],
+       [13,13,'Holy Bolt + Resist Lightning','','util'],
+       [14,19,'Holy Bolt','','util'],
+       [20,20,'Holy Bolt + Resist Fire + Resist Lightning','Izual gives the extra two','util'],
+       [21,29,'Holy Bolt','respec at 30','util'],
+       [31,37,'Blessed Hammer','every level until it caps at 37','util'],
+       [38,57,'Blessed Aim','every level until it caps at 57','aura'],
+       [58,60,'Holy Shield / Conviction / Vigor','your call','aura']],
+ stat:[[1,99,'Vitality','vit']],
+ target:'Str 40 · Dex 25 · Vit 120 · Ene 35',
+ respec:{at:30,t:'Blessed Hammer + Conviction',
+  l:['Blessed Hammer 10+','Blessed Aim 8','Conviction 1','Concentration 1, Might 1','Holy Fire, Holy Freeze, Sanctuary — 1 each']},
+ gear:['Spirit in a 4-socket sword','Insight for the merc']},
+
+{k:'druid',n:'Creamsicles',r:'Druid',c:'var(--druid)',src:'doc',
+ rows:[[1,19,'Poison Creeper','yes — every point, it carries Normal','pois'],
+       [20,20,'Oak Sage + Feral Rage + Rabies','Izual covers two','sum'],
+       [21,22,'Oak Sage','','sum'],
+       [23,25,'Oak Sage','respec at 26','sum'],
+       [27,38,'Oak Sage','every level — this is the party\'s life bar','sum'],
+       [39,40,'Shockwave','','phys'],
+       [41,55,'Lycanthropy','','phys'],
+       [56,99,'Shockwave','everything left','phys']],
+ stat:[[1,99,'Vitality','vit']],
+ target:'Str 50 · Dex 25 · Vit 105 · Ene 35',
+ respec:{at:26,t:'Oak Sage + summons',
+  l:['Oak Sage 9','Spirit Wolf 5','Dire Wolf 3','Lycanthropy 5','Shockwave 3','Werewolf 1, Werebear 1']},
+ gear:['Keep Oak Sage up and alive','You rush Andy with bArracooN — bring pots']},
+
+{k:'warlock',n:'Augural',r:'Warlock',c:'var(--warlock)',src:'maxroll',
+ rows:[[2,5,'Teeth','','bone'],
+       [6,6,'Clay Golem','your first tank','sum'],
+       [7,10,'Teeth','','bone'],
+       [11,11,'Amplify Damage','','aura'],
+       [12,12,'Iron Maiden','','aura'],
+       [13,13,'Teeth','','bone'],
+       [14,14,'Bone Armor','','bone'],
+       [15,16,'Bone Wall','','bone'],
+       [17,17,'Corpse Explosion','make Stealth around now too','bone'],
+       [18,20,'Bone Spear','','bone'],
+       [21,26,'Corpse Explosion','this is your clear speed','bone'],
+       [27,99,'Bone Spear','then Bone Prison, Bone Wall, Teeth','bone']],
+ stat:[[2,3,'Energy','ene'],[4,11,'Vitality','vit'],[12,13,'Strength','str'],
+       [14,16,'Vitality','vit'],[17,21,'22 Strength, then Vitality','str'],[22,99,'Vitality','vit']],
+ target:'',
+ respec:{at:26,t:'Bone Spear',
+  l:['Bone Spear maxed first','then Bone Prison','then Bone Wall','then Teeth','All remaining stats into Vitality']},
+ gear:['Stealth at 17','You are the killer for anyone stuck under 20 in the tombs']},
+
+{k:'sin',n:'Not Pavico',r:'Sin',c:'var(--sin)',src:'maxroll',
+ rows:[[2,5,'Fire Blast','','fire'],
+       [6,7,'Burst of Speed','','util'],
+       [8,8,'Fire Blast','','fire'],
+       [9,11,'Burst of Speed','','util'],
+       [12,13,'Wake of Fire','your main clear from here','fire'],
+       [14,20,'Wake of Fire','keep a point in Fire Blast for bosses','fire'],
+       [21,31,'Wake of Fire','','fire'],
+       [32,38,'Fire Blast','shifting ahead of the respec','fire'],
+       [39,99,'Lightning Sentry','after the respec','light']],
+ stat:[[2,3,'Energy','ene'],[4,10,'Vitality','vit'],[11,11,'Strength','str'],
+       [12,21,'Vitality','vit'],[22,26,'Strength toward 48','str'],[27,99,'Vitality','vit']],
+ target:'',
+ respec:{at:38,t:'Lightning Sentry',
+  l:['Lightning Sentry 15 — max first','Charged Bolt Sentry 10','Death Sentry 9','Burst of Speed 3','Cloak of Shadows 1, Mind Blast 1']},
+ gear:['Den of Evil reward → Claw Mastery','Stealth 17 · Leaf 19 · Battle Staff of Teleportation 24']},
+
+{k:'zon',n:'Fkityolo',r:'Zon',c:'var(--zon)',src:'maxroll',
+ rows:[[2,5,'Fire Arrow','','fire'],
+       [6,10,'Poison Javelin','','pois'],
+       [11,11,'Multiple Shot','','phys'],
+       [12,13,'Exploding Arrow','your clear for the rest of Normal','fire'],
+       [14,37,'Exploding Arrow','just keep feeding it','fire'],
+       [38,99,'Charged Strike / Lightning Fury','after the respec','light']],
+ stat:[[2,11,'Vitality','vit'],[12,12,'3 Dexterity, 2 Strength','dex'],[13,13,'Strength','str'],
+       [14,16,'Energy','ene'],[17,26,'Vitality','vit'],[27,99,'Dex to 50% block, rest Vitality','dex']],
+ target:'',
+ respec:{at:38,t:'Charged Strike / Lightning Fury',
+  l:['Charged Strike 19','Lightning Fury 9','Pierce','Dodge, Avoid, Evade']},
+ gear:['Hunter\'s Bow with Chipped Rubies','Stealth · Lore · Rhyme','Battle Staff of Teleportation at 24']}
+];
+
+/* ============================================================
+   YOUR BUILD, right here on the run page
+   ============================================================ */
+function pickerHTML(k){
+  return '<div class="pickwrap"><label for="pick">Your character</label>'+
+    '<select id="pick" onchange="choose(this.value)">'+
+    '<option value="">— choose —</option>'+
+    BUILDS.map(p=>'<option value="'+p.k+'"'+(p.k===k?' selected':'')+'>'+p.n+' · '+p.r+'</option>').join('')+
+    '</select></div>';
+}
+function choose(k){ select(k||null); }
+
+function paintRail(k){
+  const el=document.getElementById('rail');
+  const C=k ? BUILDS.find(x=>x.k===k) : null;
+  if(!C){ el.className='show'; el.innerHTML=pickerHTML(''); return; }
+  const KEY=/teleport|battle orders|blessed hammer|corpse explosion|lightning sentry|oak sage|wake of fire|exploding arrow|charged strike/i;
+  const lv=(a,b)=> a===b ? String(a) : a+'–'+(b>=99?'on':b);
+  let rows='', put=false;
+  C.rows.forEach(r=>{
+    if(C.respec && !put && r[0]>C.respec.at){
+      rows+='<div class="brsp"><div class="t2">RESPEC AT '+C.respec.at+' — '+C.respec.t+'</div><ul>'+
+            C.respec.l.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
+      put=true;
+    }
+    const key=KEY.test(r[2]) && (r[0]===r[1] || r[1]-r[0]>3);
+    rows+='<div class="br'+(key?' key':'')+'"><span class="lv">'+lv(r[0],r[1])+'</span>'+
+          '<span class="ic">'+ICO[r[4]]+'</span><span><span class="sk">'+r[2]+'</span>'+
+          (r[3]?' <span class="nt">— '+r[3]+'</span>':'')+'</span></div>';
+  });
+  if(C.respec && !put){
+    rows+='<div class="brsp"><div class="t2">RESPEC AT '+C.respec.at+' — '+C.respec.t+'</div><ul>'+
+          C.respec.l.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
+  }
+  const stats=C.stat.map(x=>{
+    const lab = x.length===3 ? x[0] : lv(x[0],x[1]);
+    const txt = x.length===3 ? x[1] : x[2];
+    return '<div class="br"><span class="lv">'+lab+'</span>'+
+      '<span class="ic">'+ICO[x[x.length-1]]+'</span><span class="sk">'+txt+'</span></div>';
+  }).join('');
+
+  el.className='show';
+  el.innerHTML=pickerHTML(C.k)+
+    '<div class="sheet">'+rows+'</div>'+
+    '<div class="rhead" style="margin-top:14px"><span class="t">Stat points · 5 per level</span></div>'+
+    '<div class="sheet">'+stats+'</div>'+
+    (C.target?'<div class="foot"><b>Target:</b> '+C.target+'</div>':'');
+}
+
 let active = null;
 function select(k){
   active = (active===k) ? null : k;
-  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on', c.dataset.k===active));
+  const who=BUILDS.find(x=>x.k===active);
+  ME = who ? who.n : '';
+  paintRail(active);
   document.querySelectorAll('.step, .card, #qr tbody tr').forEach(el=>{
     const who = (el.dataset.who||'').split(/\s+/);
     const mine = active && who.includes(active);
@@ -834,6 +1085,9 @@ function select(k){
     el.classList.toggle('me', !!mine);
   });
 }
+
+/* render the picker on load so there is always one place to choose */
+paintRail(null);
 </script>
 
 <script type="module">
