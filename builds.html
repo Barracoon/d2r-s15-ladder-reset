@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+window.FIREBASE_CONFIG = {
+  apiKey:      "AIzaSyBUEpkz2T_anuvOasQFO2yRpIB5AS-5pdo",
+  databaseURL: "https://d2r-s15-default-rtdb.firebaseio.com",
+  projectId:   "d2r-s15"
+};
+window.RUN_KEY = "";
+</script>
 <title>S15 — Builds</title>
 <style>
   :root{
@@ -64,9 +72,28 @@
     border-top:1px solid var(--line)}
   .src{font-size:12px;color:var(--dim);text-align:center;margin:22px 0 0}
   footer{text-align:center;color:var(--dim);font-size:12px;margin-top:30px}
+
+  /* ---------- sticky run clock ---------- */
+  .stickybar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;
+    justify-content:center;gap:14px;padding:9px 14px;
+    background:rgba(14,15,19,.93);backdrop-filter:blur(8px);
+    border-bottom:1px solid #4a3a20;box-shadow:0 4px 18px rgba(0,0,0,.45)}
+  .stickybar[hidden]{display:none}
+  .stickybar .sc{font-size:20px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums;
+    letter-spacing:.6px;line-height:1}
+  .stickybar .sc.done{color:#8fe0a0}
+  .stickybar .sl{font-size:10.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--dim);
+    font-weight:700;white-space:nowrap}
+  .stickybar .sp{font-size:12.5px;color:var(--dim);white-space:nowrap;
+    border-left:1px solid var(--line);padding-left:14px}
 </style>
 </head>
 <body>
+<div class="stickybar" id="stickybar" hidden>
+  <span class="sc" id="sbTime">0:00</span>
+  <span class="sl" id="sbLabel"></span>
+  <span class="sp" id="sbProg"></span>
+</div>
 <div class="wrap">
 <header>
   <h1>Season 15 — Builds</h1>
@@ -309,6 +336,88 @@ function show(k){
 const w=LS.g('bw');
 if(w && B.some(x=>x.k===w)) show(w);
 
+
+/* ============================================================
+   STICKY RUN CLOCK — follows you across all three pages
+   ============================================================ */
+(function(){
+  const bar=document.getElementById('stickybar');
+  if(!bar) return;
+  const LAB={'s15-normal':'Normal','s15-nightmare':'Nightmare'};
+  const TOTAL={'s15-normal':8,'s15-nightmare':8};
+  let RUNS={}, pastClock=false;
+
+  const f2 = ms => {
+    if(ms==null||ms<0) return '0:00';
+    const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
+    return (h? h+':'+String(m).padStart(2,'0') : String(m))+':'+String(x).padStart(2,'0');
+  };
+
+  function fromLocal(){
+    ['s15-normal','s15-nightmare'].forEach(k=>{
+      try{
+        const meta=JSON.parse(localStorage.getItem('d2r-meta-'+k)||'{}');
+        const steps=JSON.parse(localStorage.getItem('d2r-state-'+k)||'{}');
+        if(meta && meta.startedAt) RUNS[k]=Object.assign({}, RUNS[k], {meta:meta, steps:steps});
+      }catch(e){}
+    });
+  }
+  window.__stickyRuns = v => { RUNS = v || {}; paint(); };
+
+  function active(){
+    const e=Object.entries(RUNS).filter(([k,v])=>v && v.meta && v.meta.startedAt);
+    if(!e.length) return null;
+    e.sort((a,b)=>b[1].meta.startedAt - a[1].meta.startedAt);
+    return e.find(([k])=>k===window.RUN_KEY) || e[0];
+  }
+
+  function paint(){
+    const r=active();
+    // on the run pages the bar only appears once the main clock scrolls away
+    const wantsScroll = !!document.getElementById('clock');
+    if(!r || (wantsScroll && !pastClock)){
+      bar.hidden=true;
+      if(!wantsScroll) document.body.style.paddingTop='';
+      return;
+    }
+    const [key,val]=r;
+    const steps=val.steps||{};
+    const stamps=Object.values(steps).map(x=>x&&x.at).filter(Boolean).sort((a,b)=>a-b);
+    const total=TOTAL[key]||8, done=stamps.length;
+    const finished = done>=total && done>0;
+    const end = finished ? stamps[stamps.length-1] : Date.now();
+    const t=document.getElementById('sbTime');
+    t.textContent=f2(end - val.meta.startedAt);
+    t.className='sc'+(finished?' done':'');
+    document.getElementById('sbLabel').textContent=(LAB[key]||'')+(finished?' · done':'');
+    document.getElementById('sbProg').textContent=done+' / '+total;
+    bar.hidden=false;
+    // on pages with no clock of their own the bar is always up, so make room for it
+    if(!wantsScroll) document.body.style.paddingTop=bar.offsetHeight+'px';
+  }
+
+  const anchor=document.getElementById('clock');
+  if(anchor && 'IntersectionObserver' in window){
+    new IntersectionObserver(([e])=>{ pastClock = !e.isIntersecting; paint(); },
+      {threshold:0, rootMargin:'-4px 0px 0px 0px'}).observe(anchor);
+  }
+  fromLocal(); paint();
+  setInterval(()=>{ fromLocal(); paint(); }, 1000);
+})();
+</script>
+
+<script type="module">
+  /* feed the sticky clock from the shared database, if it is configured */
+  const CFG = window.FIREBASE_CONFIG || {};
+  if(CFG.databaseURL && !/PASTE/.test(CFG.databaseURL)){
+    try{
+      const SDK='https://www.gstatic.com/firebasejs/12.17.1/';
+      const { initializeApp, getApps } = await import(SDK+'firebase-app.js');
+      const { getDatabase, ref, onValue } = await import(SDK+'firebase-database.js');
+      const app = getApps().length ? getApps()[0] : initializeApp(CFG);
+      onValue(ref(getDatabase(app),'runs'), s => window.__stickyRuns && window.__stickyRuns(s.val()||{}));
+    }catch(e){}
+  }
 </script>
 </body>
 </html>

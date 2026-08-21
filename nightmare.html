@@ -276,6 +276,35 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
   .step.hasdont{border-color:#5e3129}
   @media (max-width:520px){ .dont{flex-direction:column;gap:3px} }
 
+
+  .startbtn{display:block;width:100%;background:linear-gradient(180deg,#e2c179,var(--gold));
+    color:#17130a;border:0;border-radius:16px;font:inherit;font-weight:800;
+    font-size:clamp(17px,2.6vw,21px);letter-spacing:.4px;padding:20px 14px;cursor:pointer;
+    box-shadow:0 3px 0 #8a6c33, 0 6px 18px rgba(216,181,106,.22)}
+  .startbtn[hidden],.bigclock[hidden]{display:none}
+  .startbtn:hover{background:linear-gradient(180deg,#f0d193,#e0be74)}
+  .startbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #8a6c33}
+  .bigclock{text-align:center;font-size:clamp(30px,6vw,44px);font-weight:800;color:var(--gold);
+    font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1;padding:6px 0 2px}
+  .bigclock.done{color:#8fe0a0}
+  .bigclock small{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--dim);font-weight:700;margin-top:7px}
+
+
+  /* ---------- sticky run clock ---------- */
+  .stickybar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;
+    justify-content:center;gap:14px;padding:9px 14px;
+    background:rgba(14,15,19,.93);backdrop-filter:blur(8px);
+    border-bottom:1px solid #4a3a20;box-shadow:0 4px 18px rgba(0,0,0,.45)}
+  .stickybar[hidden]{display:none}
+  .stickybar .sc{font-size:20px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums;
+    letter-spacing:.6px;line-height:1}
+  .stickybar .sc.done{color:#8fe0a0}
+  .stickybar .sl{font-size:10.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--dim);
+    font-weight:700;white-space:nowrap}
+  .stickybar .sp{font-size:12.5px;color:var(--dim);white-space:nowrap;
+    border-left:1px solid var(--line);padding-left:14px}
+
   .quickref{margin:26px 0}
   .quickref h3{font-size:15px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
   table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
@@ -290,6 +319,11 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
 </style>
 </head>
 <body>
+<div class="stickybar" id="stickybar" hidden>
+  <span class="sc" id="sbTime">0:00</span>
+  <span class="sl" id="sbLabel"></span>
+  <span class="sp" id="sbProg"></span>
+</div>
 <div class="wrap">
 
 <header>
@@ -302,10 +336,11 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
 </header>
 
 <div class="topbar">
+  <button class="startbtn" id="startBtn" type="button">▶&nbsp;&nbsp;Start the run</button>
+  <div class="bigclock" id="clock" hidden>0:00</div>
   <div class="bar"><i id="barFill"></i></div>
   <div class="topmeta">
     <span id="barTxt">0 of 8</span>
-    <span class="clock idle" id="clock">not started</span>
     <span class="dotstat" id="status" title="checking"></span>
     <button class="clear" id="resetAll">reset</button>
   </div>
@@ -567,7 +602,7 @@ document.querySelectorAll('[data-names]').forEach(el=>{
 
 // colour every in-text mention of a player by their class
 (function colourNames(){
-  const targets = document.querySelectorAll('.step p, .card p, #qr td, .endblock li, .step h4');
+  const targets = document.querySelectorAll('.step p, .card p, #qr td, .endblock li, .step h4, .dont .txt');
   const list = [...ROSTER].sort((a,b)=>b.name.length-a.name.length);
   targets.forEach(el=>{
     let h = el.innerHTML;
@@ -700,15 +735,27 @@ function orderedDone(){
 }
 
 function renderClock(){
-  const el=document.getElementById('clock');
+  const el=document.getElementById('clock'), btn=document.getElementById('startBtn');
   if(!el) return;
-  if(!META.startedAt){ el.className='clock idle'; el.textContent='not started'; return; }
+  if(!META.startedAt){ el.hidden=true; if(btn) btn.hidden=false; return; }
+  if(btn) btn.hidden=true;
+  el.hidden=false;
   const done = orderedDone();
-  const all  = document.querySelectorAll('[data-id]').length;
-  const end  = done.length===all && done.length ? STATE[done[done.length-1]].at : Date.now();
-  el.className='clock';
-  el.textContent = fmt(end - META.startedAt) + (done.length===all && all ? ' · finished' : '');
+  const all  = document.querySelectorAll('.milestone[data-id]').length;
+  const finished = all && done.length===all;
+  const end  = finished ? STATE[done[done.length-1]].at : Date.now();
+  el.className = 'bigclock' + (finished?' done':'');
+  el.innerHTML = fmt(end - META.startedAt) +
+    '<small>' + (finished ? 'finished' : 'elapsed') + '</small>';
 }
+
+const startBtn=document.getElementById('startBtn');
+if(startBtn) startBtn.onclick=()=>{
+  if(META.startedAt) return;
+  META.startedAt = Date.now();
+  if(pushMeta) pushMeta(META); else saveLocal();
+  render();
+};
 setInterval(renderClock, 1000);
 
 function renderSplits(){
@@ -1060,6 +1107,74 @@ function select(k){
 
 /* render the picker on load so there is always one place to choose */
 paintRail(null);
+
+/* ============================================================
+   STICKY RUN CLOCK — follows you across all three pages
+   ============================================================ */
+(function(){
+  const bar=document.getElementById('stickybar');
+  if(!bar) return;
+  const LAB={'s15-normal':'Normal','s15-nightmare':'Nightmare'};
+  const TOTAL={'s15-normal':8,'s15-nightmare':8};
+  let RUNS={}, pastClock=false;
+
+  const f2 = ms => {
+    if(ms==null||ms<0) return '0:00';
+    const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
+    return (h? h+':'+String(m).padStart(2,'0') : String(m))+':'+String(x).padStart(2,'0');
+  };
+
+  function fromLocal(){
+    ['s15-normal','s15-nightmare'].forEach(k=>{
+      try{
+        const meta=JSON.parse(localStorage.getItem('d2r-meta-'+k)||'{}');
+        const steps=JSON.parse(localStorage.getItem('d2r-state-'+k)||'{}');
+        if(meta && meta.startedAt) RUNS[k]=Object.assign({}, RUNS[k], {meta:meta, steps:steps});
+      }catch(e){}
+    });
+  }
+  window.__stickyRuns = v => { RUNS = v || {}; paint(); };
+
+  function active(){
+    const e=Object.entries(RUNS).filter(([k,v])=>v && v.meta && v.meta.startedAt);
+    if(!e.length) return null;
+    e.sort((a,b)=>b[1].meta.startedAt - a[1].meta.startedAt);
+    return e.find(([k])=>k===window.RUN_KEY) || e[0];
+  }
+
+  function paint(){
+    const r=active();
+    // on the run pages the bar only appears once the main clock scrolls away
+    const wantsScroll = !!document.getElementById('clock');
+    if(!r || (wantsScroll && !pastClock)){
+      bar.hidden=true;
+      if(!wantsScroll) document.body.style.paddingTop='';
+      return;
+    }
+    const [key,val]=r;
+    const steps=val.steps||{};
+    const stamps=Object.values(steps).map(x=>x&&x.at).filter(Boolean).sort((a,b)=>a-b);
+    const total=TOTAL[key]||8, done=stamps.length;
+    const finished = done>=total && done>0;
+    const end = finished ? stamps[stamps.length-1] : Date.now();
+    const t=document.getElementById('sbTime');
+    t.textContent=f2(end - val.meta.startedAt);
+    t.className='sc'+(finished?' done':'');
+    document.getElementById('sbLabel').textContent=(LAB[key]||'')+(finished?' · done':'');
+    document.getElementById('sbProg').textContent=done+' / '+total;
+    bar.hidden=false;
+    // on pages with no clock of their own the bar is always up, so make room for it
+    if(!wantsScroll) document.body.style.paddingTop=bar.offsetHeight+'px';
+  }
+
+  const anchor=document.getElementById('clock');
+  if(anchor && 'IntersectionObserver' in window){
+    new IntersectionObserver(([e])=>{ pastClock = !e.isIntersecting; paint(); },
+      {threshold:0, rootMargin:'-4px 0px 0px 0px'}).observe(anchor);
+  }
+  fromLocal(); paint();
+  setInterval(()=>{ fromLocal(); paint(); }, 1000);
+})();
 </script>
 <script type="module">
   const CFG = window.FIREBASE_CONFIG || {};
