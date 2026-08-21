@@ -305,6 +305,17 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
   .stickybar .sp{font-size:12.5px;color:var(--dim);white-space:nowrap;
     border-left:1px solid var(--line);padding-left:14px}
 
+
+  .totalline{text-align:center;font-size:12px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--dim);font-weight:700;margin-bottom:10px}
+  .totalline .t{color:var(--gold);font-size:15px;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+  .totalline[hidden]{display:none}
+  .segstart{margin:14px 0 4px}
+  .startbtn.sm{font-size:16px;padding:15px 12px;border-radius:14px}
+  .stickybar .sc2{font-size:12.5px;color:var(--dim);white-space:nowrap;
+    border-left:1px solid var(--line);padding-left:14px}
+  .stickybar .sc2 b{color:var(--txt);font-variant-numeric:tabular-nums}
+
   .quickref{margin:26px 0}
   .quickref h3{font-size:15px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
   table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
@@ -336,8 +347,9 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
 </header>
 
 <div class="topbar">
-  <button class="startbtn" id="startBtn" type="button">▶&nbsp;&nbsp;Start the run</button>
-  <div class="bigclock" id="clock" hidden>0:00</div>
+  <div class="totalline" data-total hidden>Total run <span class="t">0:00</span></div>
+  <button class="startbtn" data-start="s15-nightmare" type="button">▶&nbsp;&nbsp;Start Nightmare</button>
+  <div class="bigclock" data-clock="s15-nightmare" data-label="nightmare" hidden><span class="t">0:00</span><small>nightmare</small></div>
   <div class="bar"><i id="barFill"></i></div>
   <div class="topmeta">
     <span id="barTxt">0 of 8</span>
@@ -527,6 +539,11 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
 </div>
 
 <div class="act"><span class="num">HELL</span><h2>Same shape as Nightmare — one decision changes</h2></div>
+<div class="segstart">
+  <button class="startbtn sm" data-start="s15-hell" type="button">▶&nbsp;&nbsp;Start Hell</button>
+  <div class="bigclock" data-clock="s15-hell" data-label="hell" hidden><span class="t">0:00</span><small>hell</small></div>
+</div>
+
 <div class="flow" id="hell">
 
   <div class="step milestone" data-id="hell--do-we-still-need-insights-and-spirits" data-who="tele barb pally warlock sin zon druid taxi">
@@ -734,29 +751,7 @@ function orderedDone(){
     .sort((a,b)=> (STATE[a].at||0)-(STATE[b].at||0) || rank.get(a)-rank.get(b));
 }
 
-function renderClock(){
-  const el=document.getElementById('clock'), btn=document.getElementById('startBtn');
-  if(!el) return;
-  if(!META.startedAt){ el.hidden=true; if(btn) btn.hidden=false; return; }
-  if(btn) btn.hidden=true;
-  el.hidden=false;
-  const done = orderedDone();
-  const all  = document.querySelectorAll('.milestone[data-id]').length;
-  const finished = all && done.length===all;
-  const end  = finished ? STATE[done[done.length-1]].at : Date.now();
-  el.className = 'bigclock' + (finished?' done':'');
-  el.innerHTML = fmt(end - META.startedAt) +
-    '<small>' + (finished ? 'finished' : 'elapsed') + '</small>';
-}
 
-const startBtn=document.getElementById('startBtn');
-if(startBtn) startBtn.onclick=()=>{
-  if(META.startedAt) return;
-  META.startedAt = Date.now();
-  if(pushMeta) pushMeta(META); else saveLocal();
-  render();
-};
-setInterval(renderClock, 1000);
 
 function renderSplits(){
   const wrap=document.getElementById('splitsWrap');
@@ -840,7 +835,8 @@ function render(){
   const pct= all.length? Math.round(done/all.length*100):0;
   document.getElementById('barFill').style.width=pct+'%';
   document.getElementById('barTxt').textContent=done+' of '+all.length+' checkpoints';
-  renderClock(); renderSplits(); paintRails();
+  if(window.__timersReady) paintTimers();
+  renderSplits(); paintRails();
   document.querySelectorAll('.actprog').forEach(sp=>{
     const f=document.getElementById(sp.dataset.for);
     const items=[...f.querySelectorAll('.milestone[data-id]')];
@@ -862,6 +858,7 @@ rst.onclick=()=>{
   }
   clearTimeout(armTimer); armed=false; rst.textContent='reset'; rst.style.color=''; rst.style.borderColor='';
   STATE={}; META={}; render();
+  segClear(window.RUN_KEY);
   if(pushClear) pushClear(); else saveLocal();
 };
 
@@ -1108,73 +1105,122 @@ function select(k){
 /* render the picker on load so there is always one place to choose */
 paintRail(null);
 
+
+
 /* ============================================================
-   STICKY RUN CLOCK — follows you across all three pages
+   RUN TIMERS — one total, one clock per difficulty
    ============================================================ */
-(function(){
+var SEG    = ['s15-normal','s15-nightmare','s15-hell'];
+var SEGLAB = {'s15-normal':'Normal','s15-nightmare':'Nightmare','s15-hell':'Hell'};
+window.__META = window.__META || {};
+
+var tfmt = ms => {
+  if(ms==null||ms<0) return '0:00';
+  const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
+  return (h? h+':'+String(m).padStart(2,'0') : String(m))+':'+String(x).padStart(2,'0');
+};
+var segStart = k => (window.__META[k]||{}).startedAt || 0;
+function segLoadLocal(){
+  SEG.forEach(k=>{ try{
+    const m=JSON.parse(localStorage.getItem('d2r-meta-'+k)||'{}');
+    if(m && m.startedAt && !window.__META[k]) window.__META[k]=m;
+  }catch(e){} });
+}
+function segSet(k){
+  if(segStart(k)) return;
+  window.__META[k]={startedAt:Date.now()};
+  try{ localStorage.setItem('d2r-meta-'+k, JSON.stringify(window.__META[k])); }catch(e){}
+  if(window.__pushMeta) window.__pushMeta(k, window.__META[k]);
+  if(k===window.RUN_KEY){ META = window.__META[k]; if(typeof render==='function') render(); }
+  paintTimers();
+}
+function segClear(k){
+  delete window.__META[k];
+  try{ localStorage.removeItem('d2r-meta-'+k); }catch(e){}
+  if(window.__pushMeta) window.__pushMeta(k, null);
+  paintTimers();
+}
+function totalStart(){
+  const s=SEG.map(segStart).filter(Boolean);
+  return s.length ? Math.min.apply(null,s) : 0;
+}
+function segEnd(k){
+  // freeze this page's own segment once every checkpoint on it is ticked
+  if(k!==window.RUN_KEY || typeof orderedDone!=='function') return 0;
+  const all=document.querySelectorAll('.milestone[data-id]').length;
+  const done=orderedDone();
+  return (all && done.length===all) ? STATE[done[done.length-1]].at : 0;
+}
+
+function paintTimers(){
+  const now=Date.now(), tS=totalStart();
+  document.querySelectorAll('[data-clock]').forEach(el=>{
+    const k=el.dataset.clock, st=segStart(k);
+    const btn=document.querySelector('[data-start="'+k+'"]');
+    if(!st){ el.hidden=true; if(btn) btn.hidden=false; return; }
+    if(btn) btn.hidden=true;
+    el.hidden=false;
+    const fin=segEnd(k);
+    el.classList.toggle('done', !!fin);
+    el.querySelector('.t').textContent=tfmt((fin||now)-st);
+    const lab=el.querySelector('small');
+    if(lab) lab.textContent = fin ? 'finished' : (el.dataset.label||'elapsed');
+  });
+  document.querySelectorAll('[data-total]').forEach(el=>{
+    if(!tS){ el.hidden=true; return; }
+    el.hidden=false;
+    el.querySelector('.t').textContent=tfmt(now-tS);
+  });
+  paintSticky();
+}
+
+document.addEventListener('click', e=>{
+  const b=e.target.closest('[data-start]');
+  if(b) segSet(b.dataset.start);
+});
+
+/* ---- sticky bar: total, then whichever difficulty is live ---- */
+function paintSticky(){
   const bar=document.getElementById('stickybar');
   if(!bar) return;
-  const LAB={'s15-normal':'Normal','s15-nightmare':'Nightmare'};
-  const TOTAL={'s15-normal':8,'s15-nightmare':8};
-  let RUNS={}, pastClock=false;
-
-  const f2 = ms => {
-    if(ms==null||ms<0) return '0:00';
-    const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
-    return (h? h+':'+String(m).padStart(2,'0') : String(m))+':'+String(x).padStart(2,'0');
-  };
-
-  function fromLocal(){
-    ['s15-normal','s15-nightmare'].forEach(k=>{
-      try{
-        const meta=JSON.parse(localStorage.getItem('d2r-meta-'+k)||'{}');
-        const steps=JSON.parse(localStorage.getItem('d2r-state-'+k)||'{}');
-        if(meta && meta.startedAt) RUNS[k]=Object.assign({}, RUNS[k], {meta:meta, steps:steps});
-      }catch(e){}
-    });
+  const tS=totalStart();
+  const anchored=document.querySelector('[data-clock]');
+  const hideUntilScrolled = !!anchored && !window.__pastClock;
+  if(!tS || hideUntilScrolled){
+    bar.hidden=true;
+    if(!anchored) document.body.style.paddingTop='';
+    return;
   }
-  window.__stickyRuns = v => { RUNS = v || {}; paint(); };
+  const live=SEG.filter(segStart).sort((a,b)=>segStart(b)-segStart(a))[0];
+  const fin=segEnd(live);
+  document.getElementById('sbTime').textContent=tfmt(Date.now()-tS);
+  document.getElementById('sbLabel').textContent='total';
+  const seg=document.getElementById('sbProg');
+  const prog=(window.__segProg&&window.__segProg(live))||'';
+  seg.innerHTML=(SEGLAB[live]||'')+' <b>'+tfmt((fin||Date.now())-segStart(live))+'</b>'+
+                (prog?' · '+prog:'');
+  seg.className='sc2';
+  bar.hidden=false;
+  if(!anchored) document.body.style.paddingTop=bar.offsetHeight+'px';
+}
+window.__segProg = k => {
+  if(k!==window.RUN_KEY || typeof STATE==='undefined') return '';
+  const all=document.querySelectorAll('.milestone[data-id]').length;
+  if(!all) return '';
+  return Object.keys(STATE).length+'/'+all;
+};
 
-  function active(){
-    const e=Object.entries(RUNS).filter(([k,v])=>v && v.meta && v.meta.startedAt);
-    if(!e.length) return null;
-    e.sort((a,b)=>b[1].meta.startedAt - a[1].meta.startedAt);
-    return e.find(([k])=>k===window.RUN_KEY) || e[0];
-  }
+const clockAnchor=document.querySelector('[data-clock]');
+if(clockAnchor && 'IntersectionObserver' in window){
+  new IntersectionObserver(([e])=>{ window.__pastClock=!e.isIntersecting; paintSticky(); },
+    {threshold:0}).observe(clockAnchor);
+} else { window.__pastClock=true; }
 
-  function paint(){
-    const r=active();
-    // on the run pages the bar only appears once the main clock scrolls away
-    const wantsScroll = !!document.getElementById('clock');
-    if(!r || (wantsScroll && !pastClock)){
-      bar.hidden=true;
-      if(!wantsScroll) document.body.style.paddingTop='';
-      return;
-    }
-    const [key,val]=r;
-    const steps=val.steps||{};
-    const stamps=Object.values(steps).map(x=>x&&x.at).filter(Boolean).sort((a,b)=>a-b);
-    const total=TOTAL[key]||8, done=stamps.length;
-    const finished = done>=total && done>0;
-    const end = finished ? stamps[stamps.length-1] : Date.now();
-    const t=document.getElementById('sbTime');
-    t.textContent=f2(end - val.meta.startedAt);
-    t.className='sc'+(finished?' done':'');
-    document.getElementById('sbLabel').textContent=(LAB[key]||'')+(finished?' · done':'');
-    document.getElementById('sbProg').textContent=done+' / '+total;
-    bar.hidden=false;
-    // on pages with no clock of their own the bar is always up, so make room for it
-    if(!wantsScroll) document.body.style.paddingTop=bar.offsetHeight+'px';
-  }
-
-  const anchor=document.getElementById('clock');
-  if(anchor && 'IntersectionObserver' in window){
-    new IntersectionObserver(([e])=>{ pastClock = !e.isIntersecting; paint(); },
-      {threshold:0, rootMargin:'-4px 0px 0px 0px'}).observe(anchor);
-  }
-  fromLocal(); paint();
-  setInterval(()=>{ fromLocal(); paint(); }, 1000);
-})();
+window.__timersReady = true;
+segLoadLocal();
+if(window.RUN_KEY && segStart(window.RUN_KEY) && typeof META!=='undefined') META = window.__META[window.RUN_KEY];
+paintTimers();
+setInterval(paintTimers, 1000);
 </script>
 <script type="module">
   const CFG = window.FIREBASE_CONFIG || {};
