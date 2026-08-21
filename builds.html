@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S15 — Builds</title>
+<style>
+  :root{
+    --bg:#0e0f13; --panel:#171922; --panel2:#1e2130; --line:#2c3040;
+    --txt:#e8e6e3; --dim:#9aa0b0; --gold:#d8b56a; --red:#c8503f;
+    --tele:#6b8cff; --taxi:#38cfe0; --barb:#c69a72; --pally:#f172b0;
+    --warlock:#b98af0; --sin:#4ad991; --zon:#f2d95c; --druid:#ef8b4b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:640px;margin:0 auto;padding:18px 16px 60px}
+  header{text-align:center}
+  h1{margin:0;font-size:19px;letter-spacing:.4px;color:var(--gold)}
+  .nav{display:flex;justify-content:center;gap:8px;margin:12px 0 0}
+  .nav a{font-size:13px;color:var(--dim);text-decoration:none;border:1px solid var(--line);
+    border-radius:999px;padding:6px 14px}
+  .nav a.on{color:#0e0f13;background:var(--gold);border-color:var(--gold);font-weight:700}
+
+  .who{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:20px 0 0}
+  .who button{background:var(--panel2);border:1px solid var(--line);border-radius:999px;
+    padding:9px 15px;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer;color:var(--txt)}
+  .who button:hover{border-color:var(--gold)}
+  .name{display:flex;align-items:center;justify-content:center;gap:10px;margin:18px 0 4px}
+  .name b{font-size:18px}
+  .name span{font-size:13.5px;color:var(--dim)}
+  .name button{background:none;border:1px solid var(--line);border-radius:999px;color:var(--dim);
+    font:inherit;font-size:12px;padding:4px 11px;cursor:pointer}
+
+  h2{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);
+    margin:26px 0 8px;font-weight:700}
+  .sheet{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .r{display:flex;align-items:center;gap:13px;padding:11px 14px;border-top:1px solid var(--line);
+    font-size:15px}
+  .r:first-child{border-top:0}
+  .r .lv{font-variant-numeric:tabular-nums;font-weight:700;color:var(--dim);font-size:13.5px;
+    min-width:58px;flex:0 0 auto;letter-spacing:.4px}
+  .r .ic{width:26px;height:26px;flex:0 0 auto;opacity:.9}
+  .r .ic svg{width:26px;height:26px;display:block}
+  .r .sk{font-weight:600}
+  .r .nt{color:var(--dim);font-weight:400;font-size:13px}
+  .r.key{background:#1d1a16}
+  .r.key .lv{color:var(--gold)}
+  .r.key .sk{color:var(--gold);font-size:17px;font-weight:800}
+  .rsp{background:linear-gradient(180deg,#2a1520,#1b1620);border-top:1px solid #5a2a3a;
+    border-bottom:1px solid #5a2a3a;padding:14px 16px}
+  .rsp .t{color:#f172b0;font-weight:800;font-size:15px;letter-spacing:.3px}
+  .rsp ul{margin:8px 0 0;padding-left:18px}
+  .rsp li{font-size:13.5px;color:#d3d6de;margin:3px 0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:520px){ .two{grid-template-columns:1fr} }
+  .box{border:1px solid var(--line);border-radius:14px;padding:13px 15px;background:var(--panel)}
+  .box .r{padding:6px 0;border-top:0;font-size:14px}
+  .box .r .lv{min-width:64px}
+  .box ul{margin:0;padding-left:17px}
+  .box li{font-size:13.5px;margin:4px 0;color:#d3d6de}
+  .tgt{font-size:12.5px;color:var(--gold);margin-top:9px;padding-top:9px;
+    border-top:1px solid var(--line)}
+  .src{font-size:12px;color:var(--dim);text-align:center;margin:22px 0 0}
+  footer{text-align:center;color:var(--dim);font-size:12px;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Season 15 — Builds</h1>
+  <div class="nav">
+    <a href="index.html">Normal</a>
+    <a href="nightmare.html">Nightmare &amp; Hell</a>
+    <a class="on" href="builds.html">Builds</a>
+  </div>
+</header>
+
+<div class="who" id="who"></div>
+<div id="app"></div>
+
+<footer>Pick your name once. After that it opens straight to your sheet.</footer>
+</div>
+<script>
+const ICO = {
+ fire:'<svg viewBox="0 0 24 24" fill="none" stroke="#ef8b4b" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3c1 4-3 5-3 8a3 3 0 006 0c0-1-.4-2-1-2.6 2.4 1 4 3.3 4 6A6 6 0 116.6 9 10 10 0 0012 3z"/></svg>',
+ cold:'<svg viewBox="0 0 24 24" fill="none" stroke="#38cfe0" stroke-width="1.9" stroke-linecap="round"><path d="M12 2v20M4 6l16 12M20 6L4 18"/></svg>',
+ light:'<svg viewBox="0 0 24 24" fill="none" stroke="#f2d95c" stroke-width="1.9" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>',
+ pois:'<svg viewBox="0 0 24 24" fill="none" stroke="#9ecc3b" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3s6 6.4 6 10.4A6 6 0 016 13.4C6 9.4 12 3 12 3z"/></svg>',
+ phys:'<svg viewBox="0 0 24 24" fill="none" stroke="#c69a72" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 3l-9 9M14 6l4 4M4 20l4-1 9-9-3-3-9 9z"/></svg>',
+ bone:'<svg viewBox="0 0 24 24" fill="none" stroke="#b98af0" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3a7 7 0 00-4 12.7V19h8v-3.3A7 7 0 0012 3z"/><path d="M9.5 11h.01M14.5 11h.01"/></svg>',
+ aura:'<svg viewBox="0 0 24 24" fill="none" stroke="#f172b0" stroke-width="1.9"><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>',
+ sum:'<svg viewBox="0 0 24 24" fill="none" stroke="#8fbf5a" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3l7 4v6c0 4-3 6.5-7 8-4-1.5-7-4-7-8V7z"/></svg>',
+ util:'<svg viewBox="0 0 24 24" fill="none" stroke="#6b8cff" stroke-width="1.9" stroke-linejoin="round"><path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6z"/></svg>',
+ save:'<svg viewBox="0 0 24 24" fill="none" stroke="#d8b56a" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+ vit:'<svg viewBox="0 0 24 24" fill="none" stroke="#e0645a" stroke-width="1.9" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.3A3.9 3.9 0 0112 8a3.9 3.9 0 017 2.7c0 4.9-7 9.3-7 9.3z"/></svg>',
+ str:'<svg viewBox="0 0 24 24" fill="none" stroke="#c69a72" stroke-width="1.9" stroke-linecap="round"><path d="M4 9v6M20 9v6M7 7v10M17 7v10M7 12h10"/></svg>',
+ ene:'<svg viewBox="0 0 24 24" fill="none" stroke="#6b8cff" stroke-width="1.9" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>',
+ dex:'<svg viewBox="0 0 24 24" fill="none" stroke="#4ad991" stroke-width="1.9"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>'
+};/* rows: [fromLvl, toLvl, skill, note, iconKey]
+   stat: [fromLvl, toLvl, where, iconKey]                                    */
+const B = [
+{k:'tele',n:'bArracooN',r:'TeleSorc',c:'var(--tele)',src:'doc',
+ rows:[[1,1,'Frozen Armor','','cold'],
+       [2,5,'Save the point','bank it — do not spend','save'],
+       [6,6,'Static Field + Telekinesis + Frost Nova','one each, out of the bank','light'],
+       [7,11,'Static Field','','light'],
+       [12,12,'Nova','the free Radament point','light'],
+       [13,17,'Nova','','light'],
+       [18,18,'Teleport','this is the big one','util'],
+       [19,19,'Nova','','light'],
+       [20,20,'Nova ×2','Izual gives two — both here','light'],
+       [21,25,'Nova','respec at 26','light'],
+       [27,30,'Energy Shield','','util'],
+       [31,37,'Teleport','','util']],
+ stat:[[1,99,'Vitality','vit']],
+ target:'By 26 — Str 35 · Vit 77 · Ene 60',
+ respec:{at:26,t:'Energy Shield / Teleport',
+  l:['Telekinesis 20','Static Field 6–7','Energy Shield 2','Teleport 1','Frozen Armor 1, Frost Nova 1','Charged Bolt, Lightning, Chain Lightning — 1 each']},
+ gear:['Res / life / mana on boots, gloves, belt','Spirit as soon as the runes land']},
+
+{k:'taxi',n:'Zinski',r:'Sorc',c:'var(--taxi)',src:'doc',
+ rows:[[1,1,'Frozen Armor','','cold'],
+       [2,5,'Save the point','bank it','save'],
+       [6,6,'Static Field + Telekinesis + Frost Nova','one each, out of the bank','light'],
+       [7,11,'Static Field','','light'],
+       [12,12,'Nova','free Radament point','light'],
+       [13,17,'Nova','','light'],
+       [18,18,'Teleport','take it the moment you hit 18','util'],
+       [19,19,'Nova','','light'],
+       [20,20,'Nova ×2','Izual points','light'],
+       [21,29,'Nova','respec at 30','light'],
+       [31,99,'Firewall + Fire Mastery','after the respec','fire']],
+ stat:[[1,99,'Vitality','vit']],
+ target:'By 26 — Str 35 · Dex 20 · Vit 75 · Ene 65',
+ respec:{at:30,t:'Firewall boss killer',
+  l:['Telekinesis 14','Static Field 7','Firewall 1+, Fire Mastery 1+','Warmth, Inferno, Blaze — 1 each','Teleport 1, Energy Shield 1']},
+ gear:['Res / life / mana boots, gloves, belt','Spirit when you can']},
+
+{k:'barb',n:'Bonk',r:'Barb',c:'var(--barb)',src:'doc',
+ rows:[[1,1,'Bash','','phys'],
+       [2,2,'Mace Mastery','','phys'],
+       [3,3,'Howl','','aura'],
+       [4,5,'Save the point','bank it','save'],
+       [6,6,'Taunt + Leap + Double Swing','one each, out of the bank','phys'],
+       [7,9,'Mace Mastery','','phys'],
+       [10,17,'Leap','this is your sewer trick in Act 2','phys'],
+       [18,18,'Leap Attack','','phys'],
+       [19,20,'Leap','','phys'],
+       [22,23,'Shout','Battle Orders unlocks at 24','aura'],
+       [24,43,'Battle Orders','every level until it caps at 43','aura']],
+ stat:[[1,99,'Vitality','vit']],
+ target:'Str 50 · Dex 20 · Vit 135 · Ene 35',
+ respec:{at:21,t:'Battle Orders',
+  l:['Shout 11','Battle Orders 1+ (unlocks at 24)','Battle Command 1 (at 30)','Leap 8','Howl 1, Taunt 1','Increased Stamina, Speed, Iron Skin — 1 each']},
+ gear:['You carry pots and TP tomes for both Sorcs','Hold Wirt\'s Leg until Cows']},
+
+{k:'pally',n:'XiLeD88',r:'Pally',c:'var(--pally)',src:'doc',
+ rows:[[1,1,'Sacrifice','','phys'],
+       [2,2,'Might','','aura'],
+       [3,3,'Smite','','phys'],
+       [4,5,'Save the point','bank it','save'],
+       [6,11,'Holy Bolt','your damage for all of Normal','util'],
+       [12,12,'Charge + Resist Lightning','Radament covers the second','aura'],
+       [13,13,'Holy Bolt + Resist Lightning','','util'],
+       [14,19,'Holy Bolt','','util'],
+       [20,20,'Holy Bolt + Resist Fire + Resist Lightning','Izual gives the extra two','util'],
+       [21,29,'Holy Bolt','respec at 30','util'],
+       [31,37,'Blessed Hammer','every level until it caps at 37','util'],
+       [38,57,'Blessed Aim','every level until it caps at 57','aura'],
+       [58,60,'Holy Shield / Conviction / Vigor','your call','aura']],
+ stat:[[1,99,'Vitality','vit']],
+ target:'Str 40 · Dex 25 · Vit 120 · Ene 35',
+ respec:{at:30,t:'Blessed Hammer + Conviction',
+  l:['Blessed Hammer 10+','Blessed Aim 8','Conviction 1','Concentration 1, Might 1','Holy Fire, Holy Freeze, Sanctuary — 1 each']},
+ gear:['Spirit in a 4-socket sword','Insight for the merc']},
+
+{k:'druid',n:'Creamsicles',r:'Druid',c:'var(--druid)',src:'doc',
+ rows:[[1,19,'Poison Creeper','yes — every point, it carries Normal','pois'],
+       [20,20,'Oak Sage + Feral Rage + Rabies','Izual covers two','sum'],
+       [21,22,'Oak Sage','','sum'],
+       [23,25,'Oak Sage','respec at 26','sum'],
+       [27,38,'Oak Sage','every level — this is the party\'s life bar','sum'],
+       [39,40,'Shockwave','','phys'],
+       [41,55,'Lycanthropy','','phys'],
+       [56,99,'Shockwave','everything left','phys']],
+ stat:[[1,99,'Vitality','vit']],
+ target:'Str 50 · Dex 25 · Vit 105 · Ene 35',
+ respec:{at:26,t:'Oak Sage + summons',
+  l:['Oak Sage 9','Spirit Wolf 5','Dire Wolf 3','Lycanthropy 5','Shockwave 3','Werewolf 1, Werebear 1']},
+ gear:['Keep Oak Sage up and alive','You rush Andy with bArracooN — bring pots']},
+
+{k:'warlock',n:'Augural',r:'Warlock',c:'var(--warlock)',src:'maxroll',
+ rows:[[2,5,'Teeth','','bone'],
+       [6,6,'Clay Golem','your first tank','sum'],
+       [7,10,'Teeth','','bone'],
+       [11,11,'Amplify Damage','','aura'],
+       [12,12,'Iron Maiden','','aura'],
+       [13,13,'Teeth','','bone'],
+       [14,14,'Bone Armor','','bone'],
+       [15,16,'Bone Wall','','bone'],
+       [17,17,'Corpse Explosion','make Stealth around now too','bone'],
+       [18,20,'Bone Spear','','bone'],
+       [21,26,'Corpse Explosion','this is your clear speed','bone'],
+       [27,99,'Bone Spear','then Bone Prison, Bone Wall, Teeth','bone']],
+ stat:[[2,3,'Energy','ene'],[4,11,'Vitality','vit'],[12,13,'Strength','str'],
+       [14,16,'Vitality','vit'],[17,21,'22 Strength, then Vitality','str'],[22,99,'Vitality','vit']],
+ target:'',
+ respec:{at:26,t:'Bone Spear',
+  l:['Bone Spear maxed first','then Bone Prison','then Bone Wall','then Teeth','All remaining stats into Vitality']},
+ gear:['Stealth at 17','You are the killer for anyone stuck under 20 in the tombs']},
+
+{k:'sin',n:'Not Pavico',r:'Sin',c:'var(--sin)',src:'maxroll',
+ rows:[[2,5,'Fire Blast','','fire'],
+       [6,7,'Burst of Speed','','util'],
+       [8,8,'Fire Blast','','fire'],
+       [9,11,'Burst of Speed','','util'],
+       [12,13,'Wake of Fire','your main clear from here','fire'],
+       [14,20,'Wake of Fire','keep a point in Fire Blast for bosses','fire'],
+       [21,31,'Wake of Fire','','fire'],
+       [32,38,'Fire Blast','shifting ahead of the respec','fire'],
+       [39,99,'Lightning Sentry','after the respec','light']],
+ stat:[[2,3,'Energy','ene'],[4,10,'Vitality','vit'],[11,11,'Strength','str'],
+       [12,21,'Vitality','vit'],[22,26,'Strength toward 48','str'],[27,99,'Vitality','vit']],
+ target:'',
+ respec:{at:38,t:'Lightning Sentry',
+  l:['Lightning Sentry 15 — max first','Charged Bolt Sentry 10','Death Sentry 9','Burst of Speed 3','Cloak of Shadows 1, Mind Blast 1']},
+ gear:['Den of Evil reward → Claw Mastery','Stealth 17 · Leaf 19 · Battle Staff of Teleportation 24']},
+
+{k:'zon',n:'Fkityolo',r:'Zon',c:'var(--zon)',src:'maxroll',
+ rows:[[2,5,'Fire Arrow','','fire'],
+       [6,10,'Poison Javelin','','pois'],
+       [11,11,'Multiple Shot','','phys'],
+       [12,13,'Exploding Arrow','your clear for the rest of Normal','fire'],
+       [14,37,'Exploding Arrow','just keep feeding it','fire'],
+       [38,99,'Charged Strike / Lightning Fury','after the respec','light']],
+ stat:[[2,11,'Vitality','vit'],[12,12,'3 Dexterity, 2 Strength','dex'],[13,13,'Strength','str'],
+       [14,16,'Energy','ene'],[17,26,'Vitality','vit'],[27,99,'Dex to 50% block, rest Vitality','dex']],
+ target:'',
+ respec:{at:38,t:'Charged Strike / Lightning Fury',
+  l:['Charged Strike 19','Lightning Fury 9','Pierce','Dodge, Avoid, Evade']},
+ gear:['Hunter\'s Bow with Chipped Rubies','Stealth · Lore · Rhyme','Battle Staff of Teleportation at 24']}
+];
+const LS={g(k){try{return localStorage.getItem(k)}catch(e){return null}},
+          s(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+const who=document.getElementById('who');
+B.forEach(p=>{
+  const b=document.createElement('button');
+  b.textContent=p.n; b.style.color=p.c; b.dataset.k=p.k;
+  b.onclick=()=>pick(p.k);
+  who.appendChild(b);
+});
+function pick(k){ LS.s('bw',k); show(k); }
+function change(){
+  document.getElementById('who').style.display='flex';
+  document.getElementById('app').innerHTML='';
+}
+const lv=(a,b)=> a===b ? String(a) : a+'–'+(b>=99?'on':b);
+
+function show(k){
+  const C=B.find(x=>x.k===k); if(!C) return;
+  document.getElementById('who').style.display='none';
+
+  // KEY levels get the gold treatment: the ones people actually ask about
+  const KEY=/teleport|battle orders|blessed hammer|corpse explosion|lightning sentry|oak sage|wake of fire|exploding arrow|charged strike/i;
+
+  let rows='', done=false;
+  C.rows.forEach(r=>{
+    // drop the respec band in at the right point in the ladder
+    if(C.respec && !done && r[0]>C.respec.at){
+      rows+='<div class="rsp"><div class="t">RESPEC AT '+C.respec.at+' — '+C.respec.t+'</div>'+
+            '<ul>'+C.respec.l.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
+      done=true;
+    }
+    const key = KEY.test(r[2]) && (r[0]===r[1] || r[1]-r[0]>3);
+    rows+='<div class="r'+(key?' key':'')+'"><span class="lv">'+lv(r[0],r[1])+'</span>'+
+          '<span class="ic">'+ICO[r[4]]+'</span><span><span class="sk">'+r[2]+'</span>'+
+          (r[3]?' <span class="nt">— '+r[3]+'</span>':'')+'</span></div>';
+  });
+  if(C.respec && !done){
+    rows+='<div class="rsp"><div class="t">RESPEC AT '+C.respec.at+' — '+C.respec.t+'</div>'+
+          '<ul>'+C.respec.l.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
+  }
+
+  const stats=C.stat.map(x=>'<div class="r"><span class="lv">'+lv(x[0],x[1])+'</span>'+
+      '<span class="ic">'+ICO[x[3]]+'</span><span class="sk">'+x[2]+'</span></div>').join('');
+
+  document.getElementById('app').innerHTML =
+    '<div class="name"><b style="color:'+C.c+'">'+C.n+'</b><span>'+C.r+'</span>'+
+      '<button onclick="change()">not you?</button></div>'+
+    '<h2>Skill points</h2><div class="sheet">'+rows+'</div>'+
+    '<div class="two" style="margin-top:22px">'+
+      '<div><h2 style="margin-top:0">Stat points</h2><div class="box">'+stats+
+        (C.target?'<div class="tgt">'+C.target+'</div>':'')+'</div></div>'+
+      '<div><h2 style="margin-top:0">Gear</h2><div class="box"><ul>'+
+        C.gear.map(x=>'<li>'+x+'</li>').join('')+'</ul></div></div>'+
+    '</div>'+
+    '<div class="src">'+(C.src==='doc'
+      ? 'From the Dewablo S15 doc.'
+      : 'From Maxroll — the Dewablo doc has no build for this class.')+'</div>';
+}
+
+const w=LS.g('bw');
+if(w && B.some(x=>x.k===w)) show(w);
+
+</script>
+</body>
+</html>

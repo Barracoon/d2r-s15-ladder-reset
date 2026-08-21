@@ -84,6 +84,10 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
   .step.done:before{background:var(--gold);border-color:var(--gold);
     box-shadow:0 0 0 4px rgba(216,181,106,.15), 0 0 10px rgba(216,181,106,.5)}
   .step.dimmed{opacity:.24;filter:saturate(.2)}
+  .step.milestone{border-color:#4a3a20;background:linear-gradient(180deg,#1d1a16,var(--panel))}
+  .step.milestone > h4:before{content:"CHECKPOINT";font-size:10px;letter-spacing:1.4px;
+    color:var(--gold);background:#221a12;border:1px solid #4a3a20;border-radius:6px;
+    padding:2px 8px;white-space:nowrap;flex:0 0 auto}
   .step h4{margin:0 0 6px;font-size:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   .step p{margin:4px 0 0;font-size:14.5px;color:#d3d6de}
   .step p.small{font-size:13px;color:var(--dim)}
@@ -205,6 +209,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
   <div class="nav">
   <a href="index.html">Normal</a>
   <a class="on" href="nightmare.html">Nightmare &amp; Hell</a>
+  <a href="builds.html">Builds</a>
 </div>
 </header>
 
@@ -221,8 +226,9 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
   </div>
   <div class="bar"><i id="barFill"></i></div>
   <div class="bartxt" id="barTxt">0 of 0 done</div>
-  <p class="hint" style="margin:10px 0 0">Nobody has to tick anything — this is here if it helps mid-run
-  and ignorable if it doesn't. Checking a step also marks the steps before it done — the split groups are tracked separately, so ticking one never touches another.</p>
+  <p class="hint" style="margin:10px 0 0">Only the <b>checkpoints</b> are tickable — eight per run, roughly
+  one per act, so it's a couple of taps while you play rather than a second job. Ticking one marks the
+  earlier checkpoints done and stamps the clock.</p>
 </div>
 
 <div class="notes">
@@ -278,7 +284,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
     </div>
   </div>
 
-  <div class="step" data-id="nm1--called-back-for-andariel" data-who="tele barb pally warlock sin zon druid taxi">
+  <div class="step milestone" data-id="nm1--called-back-for-andariel" data-who="tele barb pally warlock sin zon druid taxi">
     <h4><span class="tag boss">Boss</span> Called back for Andariel</h4>
     <p>bArracooN and Bonk call it — everyone drops what they're doing and comes back for the kill.</p>
   </div>
@@ -297,7 +303,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
     <p>Keep running Countess until you're called back for the <b>Viper amulet pop</b>.</p>
   </div>
 
-  <div class="step" data-id="nm2--viper-amulet-pop" data-who="tele barb pally warlock sin zon druid taxi">
+  <div class="step milestone" data-id="nm2--viper-amulet-pop" data-who="tele barb pally warlock sin zon druid taxi">
     <h4><span class="tag boss">Boss</span> Viper amulet pop</h4>
     <p>Everyone back for the Amulet. Then <b>bArracooN teleports toward the Summoner</b>.</p>
   </div>
@@ -307,7 +313,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
     <p><b>Zinski</b> teleports to Rada. <b>Everyone except bArracooN</b> helps clear. <b class="warn">Bring the skill book back to town.</b></p>
   </div>
 
-  <div class="step" data-id="nm2--summoner-then-duriel" data-who="tele barb pally warlock sin zon druid taxi">
+  <div class="step milestone" data-id="nm2--summoner-then-duriel" data-who="tele barb pally warlock sin zon druid taxi">
     <h4><span class="tag boss">Boss</span> Summoner, then Duriel</h4>
     <p>All 8 for the Summoner. bArracooN teles to Duriel — <b>this is the shopping window</b>: res / life / mana boots, gloves and belts, especially for <b>bArracooN</b> and <b>Zinski</b>. Then everyone in for Duriel.</p>
   </div>
@@ -340,7 +346,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
     </div>
   </div>
 
-  <div class="step" data-id="nm3--travincal-mephisto" data-who="tele barb pally warlock sin zon druid taxi">
+  <div class="step milestone" data-id="nm3--travincal-mephisto" data-who="tele barb pally warlock sin zon druid taxi">
     <h4><span class="tag all">All 8</span> Travincal → Mephisto</h4>
     <p>Everyone in for Trav. Then bArracooN teleports to Meph and the group follows.</p>
   </div>
@@ -359,7 +365,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
     <p>Take the TP, kill him, <b>take the skill points</b>.</p>
   </div>
 
-  <div class="step" data-id="nm4--full-chaos-clear-diablo" data-who="tele barb pally warlock sin zon druid taxi">
+  <div class="step milestone" data-id="nm4--full-chaos-clear-diablo" data-who="tele barb pally warlock sin zon druid taxi">
     <h4><span class="tag all">All 8</span> Full Chaos clear → Diablo</h4>
     <p>bArracooN drops a TP at the start of Chaos. <b>We run all of it</b>, then Diablo.</p>
   </div>
@@ -392,7 +398,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
     <p>bArracooN drops a TP at the <b>Anya entrance</b> for <b>Zinski</b>, then carries on to Ancients. Everyone clears Anya. <b>Take the res scroll.</b></p>
   </div>
 
-  <div class="step" data-id="nm5--ancients-throne-room-baal" data-who="tele barb pally warlock sin zon druid taxi">
+  <div class="step milestone" data-id="nm5--ancients-throne-room-baal" data-who="tele barb pally warlock sin zon druid taxi">
     <h4><span class="tag boss">Boss</span> Ancients → Throne Room → Baal</h4>
     <p>All 8 for Ancients, then bArracooN teles to the Throne and we run the waves.</p>
   </div>
@@ -401,7 +407,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
 <div class="act"><span class="num">HELL</span><h2>Same shape as Nightmare — one decision changes</h2></div>
 <div class="flow" id="hell">
 
-  <div class="step" data-id="hell--do-we-still-need-insights-and-spirits" data-who="tele barb pally warlock sin zon druid taxi">
+  <div class="step milestone" data-id="hell--do-we-still-need-insights-and-spirits" data-who="tele barb pally warlock sin zon druid taxi">
     <h4><span class="tag">Decide</span> Do we still need Insights and Spirits?</h4>
     <p><b>This is the only real call to make in Hell.</b> Check as a group before Act 1 — if anyone is still missing an Insight or Spirit, we split for NM Countess exactly like above. If everyone's geared, <b>nobody splits</b> and we all just TP hop together, which is much faster.</p>
   </div>
@@ -416,7 +422,7 @@ window.RUN_KEY = "s15-nightmare";   // separate progress from the Normal page
     <p>bArracooN leads exactly as in Nightmare, dropping TPs at champ packs, and the whole group moves as one unit through all five acts.</p>
   </div>
 
-  <div class="step" data-id="hell--act-order-is-unchanged" data-who="tele barb pally warlock sin zon druid taxi">
+  <div class="step milestone" data-id="hell--act-order-is-unchanged" data-who="tele barb pally warlock sin zon druid taxi">
     <h4><span class="tag boss">Boss</span> Act order is unchanged</h4>
     <p>Andy → Staff / Viper / Rada / Summoner / Duriel → Organs / Trav / Meph → Izzy / Chaos / Diablo → Shenk / Barbs / Anya / Ancients / Baal. <b>Watch your resistances</b> — Hell hits the -100 all res penalty and immunities start mattering.</p>
   </div>
@@ -529,13 +535,14 @@ function mkChk(id){
   b.onclick=(ev)=>{ ev.stopPropagation(); toggle(id); };
   return b;
 }
-document.querySelectorAll('.step[data-id]').forEach(el=>{
+document.querySelectorAll('.step.milestone[data-id]').forEach(el=>{
   const h=el.querySelector('h4');
   h.prepend(mkChk(el.dataset.id));
   const by=document.createElement('span'); by.className='byline'; h.appendChild(by);
   const sp=document.createElement('span'); sp.className='split'; h.appendChild(sp);
 });
 document.querySelectorAll('.card[data-id]').forEach(el=>{
+  if(!el.classList.contains('milestone')) return;
   el.appendChild(mkChk(el.dataset.id));
   const by=document.createElement('span'); by.className='byline'; el.appendChild(by);
   const sp=document.createElement('span'); sp.className='split'; el.appendChild(sp);
@@ -555,7 +562,7 @@ function rankMap(){
   /* only sequential steps get a rank. Split cards are parallel groups doing
      their own thing, so they are never part of a cascade in either direction. */
   let r=0; const map=new Map();
-  document.querySelectorAll('.step[data-id]').forEach(el=>{ map.set(el.dataset.id, ++r); });
+  document.querySelectorAll('.step.milestone[data-id]').forEach(el=>{ map.set(el.dataset.id, ++r); });
   return map;
 }
 
@@ -627,7 +634,7 @@ const fmt = ms => {
 
 function orderedDone(){
   const rank = rankMap();
-  return [...document.querySelectorAll('[data-id]')]
+  return [...document.querySelectorAll('.milestone[data-id]')]
     .map(el=>el.dataset.id)
     .filter(id=>STATE[id])
     .sort((a,b)=> (STATE[a].at||0)-(STATE[b].at||0) || rank.get(a)-rank.get(b));
@@ -699,7 +706,7 @@ function paintRails(){
   document.querySelectorAll('.flow').forEach(f=>{
     // the rail follows the sequential steps only — a split group finishing
     // early shouldn't drag the gold past the whole block
-    const items=[...f.querySelectorAll('.step[data-id]')];
+    const items=[...f.querySelectorAll('.step.milestone[data-id]')];
     const done=items.filter(e=>STATE[e.dataset.id]);
     if(!done.length){ f.style.setProperty('--fill','0px'); return; }
     const last=done[done.length-1];
@@ -712,7 +719,7 @@ addEventListener('resize', paintRails);
 
 function render(){
   const colourOf = n => (ROSTER.find(p=>p.name===n)||{}).c || 'var(--dim)';
-  document.querySelectorAll('[data-id]').forEach(el=>{
+  document.querySelectorAll('.milestone[data-id]').forEach(el=>{
     const rec = STATE[el.dataset.id];
     el.classList.toggle('done', !!rec);
     const by = el.querySelector('.byline');
@@ -723,17 +730,17 @@ function render(){
     const sp = el.querySelector('.split');
     if(sp) sp.textContent = (rec && META.startedAt) ? '⏱ '+fmt(rec.at-META.startedAt) : '';
   });
-  const all=[...document.querySelectorAll('[data-id]')];
+  const all=[...document.querySelectorAll('.milestone[data-id]')];
   const done=all.filter(e=>STATE[e.dataset.id]).length;
   const pct= all.length? Math.round(done/all.length*100):0;
   document.getElementById('barFill').style.width=pct+'%';
-  document.getElementById('barTxt').textContent=done+' of '+all.length+' steps done · '+pct+'%';
+  document.getElementById('barTxt').textContent=done+' of '+all.length+' checkpoints · '+pct+'%';
   renderClock(); renderSplits(); paintRails();
   document.querySelectorAll('.actprog').forEach(sp=>{
     const f=document.getElementById(sp.dataset.for);
-    const items=[...f.querySelectorAll('[data-id]')];
+    const items=[...f.querySelectorAll('.milestone[data-id]')];
     const d=items.filter(e=>STATE[e.dataset.id]).length;
-    sp.textContent=d+'/'+items.length;
+    sp.textContent = items.length ? d+'/'+items.length : '';
     sp.style.color = d===items.length && items.length ? '#8fe0a0' : '';
   });
 }

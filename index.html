@@ -84,6 +84,10 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   .step.done:before{background:var(--gold);border-color:var(--gold);
     box-shadow:0 0 0 4px rgba(216,181,106,.15), 0 0 10px rgba(216,181,106,.5)}
   .step.dimmed{opacity:.24;filter:saturate(.2)}
+  .step.milestone{border-color:#4a3a20;background:linear-gradient(180deg,#1d1a16,var(--panel))}
+  .step.milestone > h4:before{content:"CHECKPOINT";font-size:10px;letter-spacing:1.4px;
+    color:var(--gold);background:#221a12;border:1px solid #4a3a20;border-radius:6px;
+    padding:2px 8px;white-space:nowrap;flex:0 0 auto}
   .step h4{margin:0 0 6px;font-size:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   .step p{margin:4px 0 0;font-size:14.5px;color:#d3d6de}
   .step p.small{font-size:13px;color:var(--dim)}
@@ -205,6 +209,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   <div class="nav">
     <a class="on" href="index.html">Normal</a>
     <a href="nightmare.html">Nightmare &amp; Hell</a>
+    <a href="builds.html">Builds</a>
   </div>
 </header>
 
@@ -221,9 +226,9 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
   </div>
   <div class="bar"><i id="barFill"></i></div>
   <div class="bartxt" id="barTxt">0 of 0 done</div>
-  <p class="hint" style="margin:10px 0 0">Nobody has to tick anything. We only wanted a guide that was
-  easier to follow and got a bit carried away — the checkboxes are here if they're useful mid-run,
-  and completely ignorable if they're not. Checking a step also marks the steps before it done — the split groups are tracked separately, so ticking one never touches another.</p>
+  <p class="hint" style="margin:10px 0 0">Only the <b>checkpoints</b> are tickable — eight per run, roughly
+  one per act, so it's a couple of taps while you play rather than a second job. Ticking one marks the
+  earlier checkpoints done and stamps the clock.</p>
 </div>
 
 <div class="notes">
@@ -271,7 +276,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     <p>The other six hunt down the Tree. Once found → back to town, turn in the scroll, <b>make Tristram</b>.</p>
   </div>
 
-  <div class="step" data-id="act1--run-tristram-bonk-keeps-the-leg" data-who="barb pally warlock sin zon tele">
+  <div class="step milestone" data-id="act1--run-tristram-bonk-keeps-the-leg" data-who="barb pally warlock sin zon tele">
     <h4><span class="tag loot">Loot</span> Run Tristram — Bonk KEEPS the Leg</h4>
     <p>Everyone <b>except Zinski and Creamsicles</b> runs Trist together. <b class="warn">Bonk holds Wirt's Leg all the way to Cows — do not sell it, do not drop it.</b></p>
   </div>
@@ -305,7 +310,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     </div>
   </div>
 
-  <div class="step" data-id="act1--regroup-andariel" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step milestone" data-id="act1--regroup-andariel" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag boss">Boss</span> Regroup → Andariel</h4>
     <p>When <b>bArracooN + Creamsicles</b> reach <b>Catacombs 3</b>, everyone finishes their current Countess run and rejoins the main game. Full 8-man kills Andy.</p>
   </div>
@@ -334,7 +339,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     </div>
   </div>
 
-  <div class="step" data-id="act2--clear-radament" data-who="zon pally taxi druid sin barb">
+  <div class="step milestone" data-id="act2--clear-radament" data-who="zon pally taxi druid sin barb">
     <h4><span class="tag loot">Loot</span> Clear Radament</h4>
     <p>Halls team clears Rada next. <b class="warn">Grab the extra skill books and bring them to town</b> so everyone gets a point.</p>
   </div>
@@ -349,7 +354,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     <p>Everyone runs Summoner together. <b>This is the shopping window</b> — res / life / mana gear, especially for the two Sorcs. Be quick.</p>
   </div>
 
-  <div class="step" data-id="act2--clear-the-main-tomb-duriel" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step milestone" data-id="act2--clear-the-main-tomb-duriel" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag boss">Boss</span> Clear the main Tomb → Duriel</h4>
     <p>Clear the true tomb on the way through, then all 8 kill Duriel.</p>
   </div>
@@ -383,7 +388,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     </div>
   </div>
 
-  <div class="step" data-id="act3--travincal" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step milestone" data-id="act3--travincal" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag all">All 8</span> Travincal</h4>
     <p>Everyone runs Trav together. Then <b>bArracooN teleports to Mephisto</b> and the group follows for the kill.</p>
   </div>
@@ -403,7 +408,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     <p>Take the TP, kill Izzy, <b>take the +2 skill points</b>.</p>
   </div>
 
-  <div class="step" data-id="act4--full-chaos-sanctuary-clear-diablo" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step milestone" data-id="act4--full-chaos-sanctuary-clear-diablo" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag all">All 8</span> Full Chaos Sanctuary clear → Diablo</h4>
     <p>bArracooN drops a TP at the entrance to Chaos. <b>We run all of Chaos</b> — every seal, every pack — then Diablo.</p>
   </div>
@@ -418,7 +423,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     <p><b>bArracooN</b> heads to Shenk's WP, drops a TP, and immediately keeps teleporting onward.</p>
   </div>
 
-  <div class="step" data-id="act5--everyone-else-kills-shenk" data-who="barb pally warlock sin zon taxi druid">
+  <div class="step milestone" data-id="act5--everyone-else-kills-shenk" data-who="barb pally warlock sin zon taxi druid">
     <h4><span class="tag">Clear</span> Everyone else kills Shenk</h4>
     <p>Take the WP + TP and clear Shenk and the surrounding packs.</p>
   </div>
@@ -442,7 +447,7 @@ window.RUN_KEY = "s15-normal";   // change this to start a fresh run
     <p>bArracooN drops a TP at the <b>Anya entrance</b> so Zinski can teleport straight to her; everyone else clears in. <b>Take the +1 all res scroll.</b></p>
   </div>
 
-  <div class="step" data-id="act5--ancients-throne-room-baal" data-who="barb pally warlock sin zon tele taxi druid">
+  <div class="step milestone" data-id="act5--ancients-throne-room-baal" data-who="barb pally warlock sin zon tele taxi druid">
     <h4><span class="tag boss">Boss</span> Ancients → Throne Room → Baal</h4>
     <p>bArracooN continues to Ancients, we all do the fight, then he teles through Worldstone to the Throne. <b>All 8 for Baal.</b></p>
   </div>
@@ -573,13 +578,14 @@ function mkChk(id){
   b.onclick=(ev)=>{ ev.stopPropagation(); toggle(id); };
   return b;
 }
-document.querySelectorAll('.step[data-id]').forEach(el=>{
+document.querySelectorAll('.step.milestone[data-id]').forEach(el=>{
   const h=el.querySelector('h4');
   h.prepend(mkChk(el.dataset.id));
   const by=document.createElement('span'); by.className='byline'; h.appendChild(by);
   const sp=document.createElement('span'); sp.className='split'; h.appendChild(sp);
 });
 document.querySelectorAll('.card[data-id]').forEach(el=>{
+  if(!el.classList.contains('milestone')) return;
   el.appendChild(mkChk(el.dataset.id));
   const by=document.createElement('span'); by.className='byline'; el.appendChild(by);
   const sp=document.createElement('span'); sp.className='split'; el.appendChild(sp);
@@ -599,7 +605,7 @@ function rankMap(){
   /* only sequential steps get a rank. Split cards are parallel groups doing
      their own thing, so they are never part of a cascade in either direction. */
   let r=0; const map=new Map();
-  document.querySelectorAll('.step[data-id]').forEach(el=>{ map.set(el.dataset.id, ++r); });
+  document.querySelectorAll('.step.milestone[data-id]').forEach(el=>{ map.set(el.dataset.id, ++r); });
   return map;
 }
 
@@ -671,7 +677,7 @@ const fmt = ms => {
 
 function orderedDone(){
   const rank = rankMap();
-  return [...document.querySelectorAll('[data-id]')]
+  return [...document.querySelectorAll('.milestone[data-id]')]
     .map(el=>el.dataset.id)
     .filter(id=>STATE[id])
     .sort((a,b)=> (STATE[a].at||0)-(STATE[b].at||0) || rank.get(a)-rank.get(b));
@@ -743,7 +749,7 @@ function paintRails(){
   document.querySelectorAll('.flow').forEach(f=>{
     // the rail follows the sequential steps only — a split group finishing
     // early shouldn't drag the gold past the whole block
-    const items=[...f.querySelectorAll('.step[data-id]')];
+    const items=[...f.querySelectorAll('.step.milestone[data-id]')];
     const done=items.filter(e=>STATE[e.dataset.id]);
     if(!done.length){ f.style.setProperty('--fill','0px'); return; }
     const last=done[done.length-1];
@@ -756,7 +762,7 @@ addEventListener('resize', paintRails);
 
 function render(){
   const colourOf = n => (ROSTER.find(p=>p.name===n)||{}).c || 'var(--dim)';
-  document.querySelectorAll('[data-id]').forEach(el=>{
+  document.querySelectorAll('.milestone[data-id]').forEach(el=>{
     const rec = STATE[el.dataset.id];
     el.classList.toggle('done', !!rec);
     const by = el.querySelector('.byline');
@@ -767,17 +773,17 @@ function render(){
     const sp = el.querySelector('.split');
     if(sp) sp.textContent = (rec && META.startedAt) ? '⏱ '+fmt(rec.at-META.startedAt) : '';
   });
-  const all=[...document.querySelectorAll('[data-id]')];
+  const all=[...document.querySelectorAll('.milestone[data-id]')];
   const done=all.filter(e=>STATE[e.dataset.id]).length;
   const pct= all.length? Math.round(done/all.length*100):0;
   document.getElementById('barFill').style.width=pct+'%';
-  document.getElementById('barTxt').textContent=done+' of '+all.length+' steps done · '+pct+'%';
+  document.getElementById('barTxt').textContent=done+' of '+all.length+' checkpoints · '+pct+'%';
   renderClock(); renderSplits(); paintRails();
   document.querySelectorAll('.actprog').forEach(sp=>{
     const f=document.getElementById(sp.dataset.for);
-    const items=[...f.querySelectorAll('[data-id]')];
+    const items=[...f.querySelectorAll('.milestone[data-id]')];
     const d=items.filter(e=>STATE[e.dataset.id]).length;
-    sp.textContent=d+'/'+items.length;
+    sp.textContent = items.length ? d+'/'+items.length : '';
     sp.style.color = d===items.length && items.length ? '#8fe0a0' : '';
   });
 }
