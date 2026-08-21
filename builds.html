@@ -114,8 +114,8 @@ const B = [
        [21,25,'Nova','respec at 26','light'],
        [27,30,'Energy Shield','','util'],
        [31,37,'Teleport','','util']],
- stat:[[1,99,'Vitality','vit']],
- target:'By 26 — Str 35 · Vit 77 · Ene 60',
+ stat:[['1st','Strength to 35','str'],['2nd','Energy to 60','ene'],['then','Vitality — every point after','vit']],
+ target:'Sheet should read about Str 35 · Vit 77 · Ene 60 by level 26',
  respec:{at:26,t:'Energy Shield / Teleport',
   l:['Telekinesis 20','Static Field 6–7','Energy Shield 2','Teleport 1','Frozen Armor 1, Frost Nova 1','Charged Bolt, Lightning, Chain Lightning — 1 each']},
  gear:['Res / life / mana on boots, gloves, belt','Spirit as soon as the runes land']},
@@ -132,8 +132,8 @@ const B = [
        [20,20,'Nova ×2','Izual points','light'],
        [21,29,'Nova','respec at 30','light'],
        [31,99,'Firewall + Fire Mastery','after the respec','fire']],
- stat:[[1,99,'Vitality','vit']],
- target:'By 26 — Str 35 · Dex 20 · Vit 75 · Ene 65',
+ stat:[['1st','Strength to 35','str'],['2nd','Energy to 65','ene'],['then','Vitality — every point after','vit']],
+ target:'Sheet should read about Str 35 · Vit 75 · Ene 65 by level 26',
  respec:{at:30,t:'Firewall boss killer',
   l:['Telekinesis 14','Static Field 7','Firewall 1+, Fire Mastery 1+','Warmth, Inferno, Blaze — 1 each','Teleport 1, Energy Shield 1']},
  gear:['Res / life / mana boots, gloves, belt','Spirit when you can']},
@@ -150,8 +150,8 @@ const B = [
        [19,20,'Leap','','phys'],
        [22,23,'Shout','Battle Orders unlocks at 24','aura'],
        [24,43,'Battle Orders','every level until it caps at 43','aura']],
- stat:[[1,99,'Vitality','vit']],
- target:'Str 50 · Dex 20 · Vit 135 · Ene 35',
+ stat:[['1st','Strength to 50','str'],['then','Vitality — every point after','vit']],
+ target:'Sheet should read about Str 50 · Vit 135. Doc also lists Energy 35',
  respec:{at:21,t:'Battle Orders',
   l:['Shout 11','Battle Orders 1+ (unlocks at 24)','Battle Command 1 (at 30)','Leap 8','Howl 1, Taunt 1','Increased Stamina, Speed, Iron Skin — 1 each']},
  gear:['You carry pots and TP tomes for both Sorcs','Hold Wirt\'s Leg until Cows']},
@@ -170,8 +170,8 @@ const B = [
        [31,37,'Blessed Hammer','every level until it caps at 37','util'],
        [38,57,'Blessed Aim','every level until it caps at 57','aura'],
        [58,60,'Holy Shield / Conviction / Vigor','your call','aura']],
- stat:[[1,99,'Vitality','vit']],
- target:'Str 40 · Dex 25 · Vit 120 · Ene 35',
+ stat:[['1st','Strength to 40','str'],['2nd','Dexterity to 25','dex'],['then','Vitality — every point after','vit']],
+ target:'Sheet should read about Str 40 · Dex 25 · Vit 120',
  respec:{at:30,t:'Blessed Hammer + Conviction',
   l:['Blessed Hammer 10+','Blessed Aim 8','Conviction 1','Concentration 1, Might 1','Holy Fire, Holy Freeze, Sanctuary — 1 each']},
  gear:['Spirit in a 4-socket sword','Insight for the merc']},
@@ -185,8 +185,8 @@ const B = [
        [39,40,'Shockwave','','phys'],
        [41,55,'Lycanthropy','','phys'],
        [56,99,'Shockwave','everything left','phys']],
- stat:[[1,99,'Vitality','vit']],
- target:'Str 50 · Dex 25 · Vit 105 · Ene 35',
+ stat:[['1st','Strength to 50','str'],['2nd','Dexterity to 25','dex'],['then','Vitality — every point after','vit']],
+ target:'Sheet should read about Str 50 · Dex 25 · Vit 105',
  respec:{at:26,t:'Oak Sage + summons',
   l:['Oak Sage 9','Spirit Wolf 5','Dire Wolf 3','Lycanthropy 5','Shockwave 3','Werewolf 1, Werebear 1']},
  gear:['Keep Oak Sage up and alive','You rush Andy with bArracooN — bring pots']},
@@ -284,15 +284,19 @@ function show(k){
           '<ul>'+C.respec.l.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
   }
 
-  const stats=C.stat.map(x=>'<div class="r"><span class="lv">'+lv(x[0],x[1])+'</span>'+
-      '<span class="ic">'+ICO[x[3]]+'</span><span class="sk">'+x[2]+'</span></div>').join('');
+  const stats=C.stat.map(x=>{
+    const lab = x.length===3 ? x[0] : lv(x[0],x[1]);
+    const txt = x.length===3 ? x[1] : x[2];
+    return '<div class="r"><span class="lv">'+lab+'</span>'+
+      '<span class="ic">'+ICO[x[x.length-1]]+'</span><span class="sk">'+txt+'</span></div>';
+  }).join('');
 
   document.getElementById('app').innerHTML =
     '<div class="name"><b style="color:'+C.c+'">'+C.n+'</b><span>'+C.r+'</span>'+
       '<button onclick="change()">not you?</button></div>'+
     '<h2>Skill points</h2><div class="sheet">'+rows+'</div>'+
     '<div class="two" style="margin-top:22px">'+
-      '<div><h2 style="margin-top:0">Stat points</h2><div class="box">'+stats+
+      '<div><h2 style="margin-top:0">Stat points · 5 per level</h2><div class="box">'+stats+
         (C.target?'<div class="tgt">'+C.target+'</div>':'')+'</div></div>'+
       '<div><h2 style="margin-top:0">Gear</h2><div class="box"><ul>'+
         C.gear.map(x=>'<li>'+x+'</li>').join('')+'</ul></div></div>'+
